@@ -38,7 +38,7 @@ echo "::::: Installing PiVPN..."
 
 # Download PiVPN installation script
 
-wget --output-document=temp.sh https://install.pivpn.io/
+wget --output-document=/tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
 
 # Before we start, warn user NOT to reboot after PiVPN completion
 
@@ -46,7 +46,7 @@ whiptail --title "Reboot Warning" --msgbox "At the end of the PiVPN installation
 
 # Import temp
 
-source temp.sh
+source /tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh
 
 # Make sure installation was successful, if not, break
 
@@ -63,8 +63,8 @@ if (whiptail --title "Change hostname" --yesno "Would you like to change the hos
         echo "Invalid hostname or user selected cancel. Aborting..."
         exit 1
     else
-        echo "$HOSTNAME" > /etc/hostname
-        # Replace hostname in /etc/hosts
+        sudo sh -c 'echo "$HOSTNAME" > /etc/hostname'
+        sudo sed -i "/127.0.1.1/ c 127.0.1.1       $HOSTNAME" /etc/hosts
     fi
 fi
 
@@ -74,7 +74,7 @@ cd /etc/openvpn
 
 # Download IPVanish certificate
 
-wget http://www.ipvanish.com/software/configs/ca.ipvanish.com.crt
+sudo wget http://www.ipvanish.com/software/configs/ca.ipvanish.com.crt
 
 ### Edit outgoing server ###
 
@@ -86,23 +86,23 @@ VPN_SERVER="ipvanish-UK-London-lon-a01"
 
 # Download server ovpn file
 
-wget "http://www.ipvanish.com/software/configs/$VPN_SERVER.ovpn"
+sudo wget "http://www.ipvanish.com/software/configs/$VPN_SERVER.ovpn"
 
 # Rename to outgoing.conf
 
-mv "/etc/openvpn/$VPN_SERVER.ovpn" "/etc/openvpn/outgoing.conf"
+sudo mv "/etc/openvpn/$VPN_SERVER.ovpn" "/etc/openvpn/outgoing.conf"
 
 # Replace dev tun in outgoing.conf
 
-sed -i 's/dev tun/dev tun-outgoing\ndev-type tun/' outgoing.conf
+sudo sed -i 's/dev tun/dev tun-outgoing\ndev-type tun/' outgoing.conf
 
 # Replace ca in outgoing.conf
 
-sed -i 's/ca ca.ipvanish.com.crt/ca \/etc\/openvpn\/ca.ipvanish.com.crt/' outgoing.conf
+sudo sed -i 's/ca ca.ipvanish.com.crt/ca \/etc\/openvpn\/ca.ipvanish.com.crt/' outgoing.conf
 
 # Replace auth-user-pass in outgoing.conf
 
-sed -i 's/auth-user-pass/auth-user-pass \/etc\/openvpn\/passwd/' outgoing.conf
+sudo sed -i 's/auth-user-pass/auth-user-pass \/etc\/openvpn\/passwd/' outgoing.conf
 
 # Append route in outgoing.conf (using $IPv4addr and $IPv4gw from pivpn install)
 
@@ -114,16 +114,16 @@ echo ":::::Obtaining IPVanish login credentials..."
 
 # Create /etc/openvpn/passwd
 
-touch /etc/openvpn/passwd
+sudo touch /etc/openvpn/passwd
 
 # Prompt user for email and password
 
-VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 Blue --title "Email" 3>&1 1>&2 2>&3)
+VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 --title "Email" 3>&1 1>&2 2>&3)
 
 VPN_PASSWORD=$(whiptail --passwordbox "Please enter your IPVanish password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
 
-echo $VPN_EMAIL > /etc/openvpn/passwd
-echo $VPN_PASSWORD >> /etc/openvpn/passwd
+sudo sh -c 'echo $VPN_EMAIL > /etc/openvpn/passwd'
+sudo sh -c 'echo $VPN_PASSWORD >> /etc/openvpn/passwd'
 
 # Secure file permissions
 
@@ -135,7 +135,7 @@ echo ":::::Modifying server.conf"
 
 # Replace dev tun in server.conf
 
-sed -i 's/dev tun/dev tun-incoming\ndev-type tun/' server.conf
+sudo sed -i 's/dev tun/dev tun-incoming\ndev-type tun/' server.conf
 
 ### Final steps ###
 
@@ -143,21 +143,26 @@ echo ":::::Final steps..."
 
 # Create and fill the file  /lib/dhcpcd/dhcpcd-hooks/40-routes
 
-touch /lib/dhcpcd/dhcpcd-hooks/40-routes
+sudo touch /lib/dhcpcd/dhcpcd-hooks/40-routes
 
-echo "ip rule add from $IPv4addr lookup 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes
-echo "ip route add default via $IPv4gw table 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes
+sudo sh -c 'echo "ip rule add from $IPv4addr lookup 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes'
+sudo sh -c 'echo "ip route add default via $IPv4gw table 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes'
 
 # Download startup script from github to /etc/
 
 cd /etc/
-wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn.sh
+sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn_startup.sh
 
 #* call script from /etc/rc.local
 
 # Modify /etc/default/openvpn so servers run on startup
 
-sed -i 's/#AUTOSTART="home office"/AUTOSTART="server outgoing"/' /etc/default/openvpn
+sudo sed -i 's/#AUTOSTART="home office"/AUTOSTART="server outgoing"/' /etc/default/openvpn
+
+# Start the servers
+
+sudo service openvpn@outgoing start
+sudo service openvpn@server start
 
 # Reboot
 
