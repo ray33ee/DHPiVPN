@@ -1,12 +1,16 @@
+Version 1.0.3
+	- dhpivpn_startup.sh now invoked from rc.local
+	- readme added
+
 Version 1.0.2
-		- dhpivpn_startup github path corrected
-		- Removed dafault value from email prompt
-		- PiVPN script downloaded to /tmp location
-		- Sudo has been added only to commands that need it
+	- dhpivpn_startup github path corrected
+	- Removed dafault value from email prompt
+	- PiVPN script downloaded to /tmp location
+	- Sudo has been added only to commands that need it
 
 Version 1.0.1
-		- sed no longer redirect to self file, use -i option instead
-		- email and passwd variable bug fixed
+	- sed no longer redirect to self file, use -i option instead
+	- email and passwd variable bug fixed
 
 Version 1.0.0
-		- Initial Commit
+	- Initial Commit

@@ -22,8 +22,6 @@ fi
 
 echo "::::: Checking conditions..."
 
-#* Make sure script is run as root
-
 #* Prompt user to change password if it is still the default 'raspberry'
 
 #* use mkpasswd and /etc/shadow to see if the password for pi user is raspberry. if it is, change
@@ -153,7 +151,13 @@ sudo sh -c 'echo "ip route add default via $IPv4gw table 101" >> /lib/dhcpcd/dhc
 cd /etc/
 sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn_startup.sh
 
-#* call script from /etc/rc.local
+# Call script from /etc/rc.local
+
+sudo sed -i '7,$ s/exit 0//' /etc/rc.local # remove exit 0
+
+sudo sh -c 'echo bash /etc/dhpivpn_startup.sh >> /etc/rc.local' # Add script
+
+sudo sh -c 'echo "exit 0" >> /etc/rc.local' 
 
 # Modify /etc/default/openvpn so servers run on startup
 
