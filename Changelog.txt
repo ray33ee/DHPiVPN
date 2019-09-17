@@ -1,2 +1,6 @@
+Version 1.0.1
+		- sed no longer redirect to self file, use -i option instead
+		- email and passwd variable bug fixed
+
 Version 1.0.0
 		- Initial Commit

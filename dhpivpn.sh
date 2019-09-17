@@ -2,6 +2,8 @@
 
 ### Update OS ###
 
+echo "::::: Updating OS..."
+
 # Update and upgrade Pi
 
 sudo apt-get update
@@ -18,6 +20,8 @@ fi
 
 ### Initial Checking ###
 
+echo "::::: Checking conditions..."
+
 #* Make sure script is run as root
 
 #* Prompt user to change password if it is still the default 'raspberry'
@@ -30,9 +34,11 @@ fi
 
 ### Install PiVPN ###
 
+echo "::::: Installing PiVPN..."
+
 # Download PiVPN installation script
 
-curl -L https://install.pivpn.io/ > temp.sh
+wget --output-document=temp.sh https://install.pivpn.io/
 
 # Before we start, warn user NOT to reboot after PiVPN completion
 
@@ -72,6 +78,8 @@ wget http://www.ipvanish.com/software/configs/ca.ipvanish.com.crt
 
 ### Edit outgoing server ###
 
+echo ":::::Modifying server.conf..."
+
 #* Ask user for name of server to use (default London 1)
 
 VPN_SERVER="ipvanish-UK-London-lon-a01"
@@ -86,21 +94,23 @@ mv "/etc/openvpn/$VPN_SERVER.ovpn" "/etc/openvpn/outgoing.conf"
 
 # Replace dev tun in outgoing.conf
 
-sed 's/dev tun/dev tun-outgoing\ndev-type tun\n/' outgoing.conf > outgoing.conf
+sed -i 's/dev tun/dev tun-outgoing\ndev-type tun/' outgoing.conf
 
-# replace ca in outgoing.conf
+# Replace ca in outgoing.conf
 
-sed 's/ca ca.ipvanish.com.crt/ca \/etc\/openvpn\/ca.ipvanish.com.crt/' outgoing.conf > outgoing.conf
+sed -i 's/ca ca.ipvanish.com.crt/ca \/etc\/openvpn\/ca.ipvanish.com.crt/' outgoing.conf
 
-# replace auth-user-pass in outgoing.conf
+# Replace auth-user-pass in outgoing.conf
 
-sed 's/auth-user-pass/auth-user-pass \/etc\/openvpn\/passwd' outgoing.conf > outgoing.conf
+sed -i 's/auth-user-pass/auth-user-pass \/etc\/openvpn\/passwd/' outgoing.conf
 
-# append route in outgoing.conf (using $IPv4addr and $IPv4gw from pivpn install)
+# Append route in outgoing.conf (using $IPv4addr and $IPv4gw from pivpn install)
 
 echo "route $IPv4addr 255.255.255.0 $IPv4gw" >> outgoing.conf
 
 ### Create password file ###
+
+echo ":::::Obtaining IPVanish login credentials..."
 
 # Create /etc/openvpn/passwd
 
@@ -112,8 +122,8 @@ VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 Blue --
 
 VPN_PASSWORD=$(whiptail --passwordbox "Please enter your IPVanish password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
 
-$VPN_EMAIL > /etc/openvpn/passwd
-$VPN_PASSWORD >> /etc/openvpn/passwd
+echo $VPN_EMAIL > /etc/openvpn/passwd
+echo $VPN_PASSWORD >> /etc/openvpn/passwd
 
 # Secure file permissions
 
@@ -121,11 +131,15 @@ sudo chmod +600 /etc/openvpn/passwd
 
 ### Edit incoming server
 
-# replace dev tun in server.conf
+echo ":::::Modifying server.conf"
 
-sed 's/dev tun/dev tun-incoming\ndev-type tun\n/' server.conf > server.conf
+# Replace dev tun in server.conf
+
+sed -i 's/dev tun/dev tun-incoming\ndev-type tun/' server.conf
 
 ### Final steps ###
+
+echo ":::::Final steps..."
 
 # Create and fill the file  /lib/dhcpcd/dhcpcd-hooks/40-routes
 
@@ -134,11 +148,23 @@ touch /lib/dhcpcd/dhcpcd-hooks/40-routes
 echo "ip rule add from $IPv4addr lookup 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes
 echo "ip route add default via $IPv4gw table 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes
 
-#* Download startup script from github to /etc/
+# Download startup script from github to /etc/
+
+cd /etc/
+wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn.sh
 
 #* call script from /etc/rc.local
 
-#* Modify /etc/default/openvpn so servers run on startup
+# Modify /etc/default/openvpn so servers run on startup
 
-#* Reboot
+sed -i 's/#AUTOSTART="home office"/AUTOSTART="server outgoing"/' /etc/default/openvpn
 
+# Reboot
+
+if (whiptail --title "Reboot" --yesno "It is now safe to reboot. Would you like to reboot now?" 8  78); then
+    sudo reboot
+fi
+
+echo "Installation complete"
+
+exit 0
