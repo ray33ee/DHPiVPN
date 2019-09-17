@@ -2,21 +2,19 @@
 
 ### Update OS ###
 
-echo "::::: Updating OS..."
-
 # Update and upgrade Pi
 
+
+echo "::::: Updating OS..."
 sudo apt-get update
 
-sudo apt-get upgrade
 
+echo "::::: Upgrading OS..."
+sudo apt-get upgrade$
+
+
+echo "::::: Installing whois..."
 sudo apt-get install whois # for mkpasswd
-
-# Ask if user wishes to install screen
-
-if (whiptail --title "Install screen" --yesno "Would you like to install screen to avoid SSH timeouts?" 8  78); then
-	sudo apt-get install screen
-fi
 
 ### Initial Checking ###
 
@@ -36,14 +34,20 @@ echo "::::: Installing PiVPN..."
 
 # Download PiVPN installation script
 
+
+echo "::::: Obtaining PiVPN installer..."
 wget --output-document=/tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
+
+# Before we start, remove the code that prompts the user to reboot
 
 # Before we start, warn user NOT to reboot after PiVPN completion
 
-whiptail --title "Reboot Warning" --msgbox "At the end of the PiVPN installation, the PiVPN installation, you will be prompted to reboot. Do NOT reboot here, as you will stop the script. You will be prompted later on to reboot at a more appropriate time." 10 78
+#whiptail --title "Reboot Warning" --msgbox "At the end of the PiVPN installation, the PiVPN installation, you will be prompted to reboot. Do NOT reboot here, as you will stop the script. You will be prompted later on to reboot at a more appropriate time." 10 78
 
 # Import temp
 
+
+echo "::::: Execute installer..."
 source /tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh
 
 # Make sure installation was successful, if not, break
@@ -53,6 +57,9 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 
+echo "Chosen IP: $IPv4addr"
+echo "Chosen GW: $IPv4gw"
+
 # Ask user if they want to change hostname, if so, ask for new name
 
 if (whiptail --title "Change hostname" --yesno "Would you like to change the hostname?" 8  78); then
@@ -61,7 +68,7 @@ if (whiptail --title "Change hostname" --yesno "Would you like to change the hos
         echo "Invalid hostname or user selected cancel. Aborting..."
         exit 1
     else
-        sudo sh -c 'echo "$HOSTNAME" > /etc/hostname'
+        sudo sh -c "echo \"$HOSTNAME\" > /etc/hostname"
         sudo sed -i "/127.0.1.1/ c 127.0.1.1       $HOSTNAME" /etc/hosts
     fi
 fi
@@ -72,6 +79,8 @@ cd /etc/openvpn
 
 # Download IPVanish certificate
 
+
+echo "::::: Get certificate..."
 sudo wget http://www.ipvanish.com/software/configs/ca.ipvanish.com.crt
 
 ### Edit outgoing server ###
@@ -84,6 +93,8 @@ VPN_SERVER="ipvanish-UK-London-lon-a01"
 
 # Download server ovpn file
 
+
+echo "::::: Get server file..."
 sudo wget "http://www.ipvanish.com/software/configs/$VPN_SERVER.ovpn"
 
 # Rename to outgoing.conf
@@ -104,7 +115,7 @@ sudo sed -i 's/auth-user-pass/auth-user-pass \/etc\/openvpn\/passwd/' outgoing.c
 
 # Append route in outgoing.conf (using $IPv4addr and $IPv4gw from pivpn install)
 
-echo "route $IPv4addr 255.255.255.0 $IPv4gw" >> outgoing.conf
+sudo sh -c "echo \"route $IPv4addr 255.255.255.0 $IPv4gw\" >> outgoing.conf"
 
 ### Create password file ###
 
@@ -112,6 +123,8 @@ echo ":::::Obtaining IPVanish login credentials..."
 
 # Create /etc/openvpn/passwd
 
+
+echo "::::: Create password file..."
 sudo touch /etc/openvpn/passwd
 
 # Prompt user for email and password
@@ -120,11 +133,15 @@ VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 --title
 
 VPN_PASSWORD=$(whiptail --passwordbox "Please enter your IPVanish password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
 
-sudo sh -c 'echo $VPN_EMAIL > /etc/openvpn/passwd'
-sudo sh -c 'echo $VPN_PASSWORD >> /etc/openvpn/passwd'
+
+echo "::::: Writing credentials..."
+sudo sh -c "echo $VPN_EMAIL > /etc/openvpn/passwd"
+sudo sh -c "echo $VPN_PASSWORD >> /etc/openvpn/passwd"
 
 # Secure file permissions
 
+
+echo "::::: Update permissions..."
 sudo chmod +600 /etc/openvpn/passwd
 
 ### Edit incoming server
@@ -141,18 +158,24 @@ echo ":::::Final steps..."
 
 # Create and fill the file  /lib/dhcpcd/dhcpcd-hooks/40-routes
 
+
+echo "::::: Updating routing tables..."
 sudo touch /lib/dhcpcd/dhcpcd-hooks/40-routes
 
-sudo sh -c 'echo "ip rule add from $IPv4addr lookup 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes'
-sudo sh -c 'echo "ip route add default via $IPv4gw table 101" >> /lib/dhcpcd/dhcpcd-hooks/40-routes'
+sudo sh -c "echo \"ip rule add from $IPv4addr lookup 101\" >> /lib/dhcpcd/dhcpcd-hooks/40-routes"
+sudo sh -c "echo \"ip route add default via $IPv4gw table 101\" >> /lib/dhcpcd/dhcpcd-hooks/40-routes"
 
 # Download startup script from github to /etc/
 
+
+echo "::::: Downloading startup script..."
 cd /etc/
 sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn_startup.sh
 
 # Call script from /etc/rc.local
 
+
+echo "::::: Call script from rc.local..."
 sudo sed -i '7,$ s/exit 0//' /etc/rc.local # remove exit 0
 
 sudo sh -c 'echo bash /etc/dhpivpn_startup.sh >> /etc/rc.local' # Add script
@@ -165,6 +188,8 @@ sudo sed -i 's/#AUTOSTART="home office"/AUTOSTART="server outgoing"/' /etc/defau
 
 # Start the servers
 
+
+echo "::::: Start servers..."
 sudo service openvpn@outgoing start
 sudo service openvpn@server start
 

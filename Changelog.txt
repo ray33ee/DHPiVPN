@@ -1,3 +1,8 @@
+Version 1.0.4
+	- Elevated functions that needed sudo
+	- Fixed variables being ignored in sudo bash commands by replacing ' with "
+	- Increased verbosity for debugging
+
 Version 1.0.3
 	- dhpivpn_startup.sh now invoked from rc.local
 	- readme added
