@@ -34,3 +34,9 @@ mount -t ext3 /dev/sda1 /mnt/hdd
 is meant for mounting an external volume (such as HDD or SSD) for large storage. If you don't have this or don't want it, you should remove it. However if you are using an external volume, this command is useful as it automatically mounts the volume on startup. You may wish to change sda1 to your partition name.
 
 * In [settings.json](https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/settings.json) several changes have been made from the original settings.json, but the incomplete-dir /mnt/hdd/incomplete and the download-dir /mnt/hdd/downloads both point to the external volume mentioned above.
+
+# To do
+
+* After the PiVPN installer script is downloaded, remove the code that prompts the user to reboot, as we do this at the end of our installer.
+* Detect if the user is using 'raspberry' as the password for the pi account. If so, strongly urge user to change.
+* Use updated firewall rules in dhpivpn_startup.sh

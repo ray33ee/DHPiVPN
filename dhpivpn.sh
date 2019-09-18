@@ -1,16 +1,17 @@
 #!/bin/sh
 
+TRNAMISSION_SAMBA=0
+
 ### Update OS ###
 
 # Update and upgrade Pi
-
 
 echo "::::: Updating OS..."
 sudo apt-get update
 
 
 echo "::::: Upgrading OS..."
-sudo apt-get upgrade$
+sudo apt-get upgrade
 
 
 echo "::::: Installing whois..."
@@ -39,13 +40,20 @@ echo "::::: Obtaining PiVPN installer..."
 wget --output-document=/tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
 
 # Before we start, remove the code that prompts the user to reboot
+# Do this by replacing the second (the first is the declaration) occurrence of 'displayFinalMessage' with ':'
+# So this
+#
+# if [[ "${useUpdateVars}" == false ]]; then
+#     displayFinalMessage
+# fi
+#
+# becomes 
+#
+# if [[ "${useUpdateVars}" == false ]]; then
+#     :
+# fi
 
-# Before we start, warn user NOT to reboot after PiVPN completion
-
-#whiptail --title "Reboot Warning" --msgbox "At the end of the PiVPN installation, the PiVPN installation, you will be prompted to reboot. Do NOT reboot here, as you will stop the script. You will be prompted later on to reboot at a more appropriate time." 10 78
-
-# Import temp
-
+# Import installation script
 
 echo "::::: Execute installer..."
 source /tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh
@@ -195,10 +203,58 @@ sudo service openvpn@server start
 
 # Reboot
 
-if (whiptail --title "Reboot" --yesno "It is now safe to reboot. Would you like to reboot now?" 8  78); then
-    sudo reboot
+if (whiptail --title "Continue" --yesno "Double hop VPN is now configured. Would you like to install optional extras?" 8  78); then
+    :
+else
+    if (whiptail --title "Reboot" --yesno "The installation is complete, and it is now safe to reboot. Would you like to reboot now?" 8  78); then
+        sudo reboot
+    fi
 fi
 
-echo "Installation complete"
+# Install Transmissinon
+
+if (whiptail --title "Transmission" --yesno "Would you like to install Transmission (transmission-daemon)?" 8  78); then
+    echo "::::: Installing transmission-daemon..."
+    sudo apt-get install transmission-daemon
+    sudo systemctl stop transmission-daemon
+    sudo mkdir /mnt/hdd
+    cd /etc/transmission-daemon/
+    sudo rm settings.json
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/settings.json
+    #* Ask user for username (default 'transmission') and password
+    sudo systemctl start transmission-daemon
+    TRNAMISSION_SAMBA=1
+fi
+
+# Install Samba
+
+if (whiptail --title "Samba file share" --yesno "Would you like to install Samba file share?" 8  78); then
+    echo "::::: Installing Samba..."
+    sudo apt-get install samba samba-common-bin
+    cd /etc/samba/
+    sudo rm smb.conf
+    sudo wget https://github.com/ray33ee/DHPiVPN/blob/master/smb.conf
+    #* If transmission is not installed, remove the 'incomplete' and 'torrents' entries 
+    sudo /etc/init.d/smbd restart
+fi
+
+# Install Apache & php
+
+if (whiptail --title "Apache web server" --yesno "Would you like to install Apache (apache2)?" 8  78); then
+    echo "::::: Installing Apache..."
+    sudo apt-get install apache2 -y
+    sudo apt-get install php libapache2-mod-php -y
+    #* Download web pages from github
+fi
+
+# Install Pi-Hole
+
+if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
+    echo "::::: Installing Pi-Hole..."
+    sudo curl -sSL https://install.pi-hole.net/ | bash
+    #* Use chosen IP to change DNS in server.conf
+fi
+
+echo "::::: Installation complete"
 
 exit 0

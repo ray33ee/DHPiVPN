@@ -1,3 +1,8 @@
+Version 1.0.5
+	- Fixed typo
+	- Added 'To do' section in readme
+	- Added optional extra installations
+
 Version 1.0.4
 	- Elevated functions that needed sudo
 	- Fixed variables being ignored in sudo bash commands by replacing ' with "
