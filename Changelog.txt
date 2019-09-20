@@ -1,3 +1,7 @@
+Version 1.0.8
+	- Selecting no for optional extras  now exits script correctly
+	- Pi-Hole now installs first to avoid network issue
+
 Version 1.0.7
 	- Split samba config into partial and full based on installation choices
 	- ovpns folder now gets permissions 775 if installing samba
