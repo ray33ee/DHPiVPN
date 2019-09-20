@@ -1,3 +1,11 @@
+Version 1.0.6
+	- Default hostname chenged form blue to $HOSTNAME
+	- Increased verbosity for optional extras 
+	- Correct path used in transmission settings.json URL
+	- Rename PiVPN script to installer
+	- Updated Todo list
+	- PiVPN installer reboot removed
+
 Version 1.0.5
 	- Fixed typo
 	- Added 'To do' section in readme

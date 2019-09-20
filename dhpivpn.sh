@@ -13,50 +13,26 @@ sudo apt-get update
 echo "::::: Upgrading OS..."
 sudo apt-get upgrade
 
-
-echo "::::: Installing whois..."
-sudo apt-get install whois # for mkpasswd
-
-### Initial Checking ###
-
-echo "::::: Checking conditions..."
-
-#* Prompt user to change password if it is still the default 'raspberry'
-
-#* use mkpasswd and /etc/shadow to see if the password for pi user is raspberry. if it is, change
-
-if (whiptail --title "Change password" --yesno "Would you like to change the default password?" 8  78); then
-	passwd
-fi
-
 ### Install PiVPN ###
 
 echo "::::: Installing PiVPN..."
 
+# Wait a few seconds to catch up
+sudo sleep 4
+
 # Download PiVPN installation script
 
-
 echo "::::: Obtaining PiVPN installer..."
-wget --output-document=/tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
+wget --output-document=/tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
 
 # Before we start, remove the code that prompts the user to reboot
-# Do this by replacing the second (the first is the declaration) occurrence of 'displayFinalMessage' with ':'
-# So this
-#
-# if [[ "${useUpdateVars}" == false ]]; then
-#     displayFinalMessage
-# fi
-#
-# becomes 
-#
-# if [[ "${useUpdateVars}" == false ]]; then
-#     :
-# fi
+
+awk 'BEGIN {findCount = 0} { if (match($0, "displayFinalMessage")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh > /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 
 # Import installation script
 
 echo "::::: Execute installer..."
-source /tmp/PiVPNScript-ad8cc55ab4bbb7882788337140558475.sh
+source /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 
 # Make sure installation was successful, if not, break
 
@@ -71,7 +47,7 @@ echo "Chosen GW: $IPv4gw"
 # Ask user if they want to change hostname, if so, ask for new name
 
 if (whiptail --title "Change hostname" --yesno "Would you like to change the hostname?" 8  78); then
-    HOSTNAME=$(whiptail --inputbox "What would you line the nwe hostname to be?" 8 78 Blue --title "Change Hostname" 3>&1 1>&2 2>&3)
+    HOSTNAME=$(whiptail --inputbox "What would you line the new hostname to be?" 8 78 $HOSTNAME --title "Change Hostname" 3>&1 1>&2 2>&3)
     if [ -z "$HOSTNAME" ]; then
         echo "Invalid hostname or user selected cancel. Aborting..."
         exit 1
@@ -86,7 +62,6 @@ fi
 cd /etc/openvpn
 
 # Download IPVanish certificate
-
 
 echo "::::: Get certificate..."
 sudo wget http://www.ipvanish.com/software/configs/ca.ipvanish.com.crt
@@ -201,6 +176,9 @@ echo "::::: Start servers..."
 sudo service openvpn@outgoing start
 sudo service openvpn@server start
 
+# Wait 4 seconds for the daemons to ready up
+sudo sleep 4
+
 # Reboot
 
 if (whiptail --title "Continue" --yesno "Double hop VPN is now configured. Would you like to install optional extras?" 8  78); then
@@ -208,6 +186,7 @@ if (whiptail --title "Continue" --yesno "Double hop VPN is now configured. Would
 else
     if (whiptail --title "Reboot" --yesno "The installation is complete, and it is now safe to reboot. Would you like to reboot now?" 8  78); then
         sudo reboot
+        sudo sleep 4
     fi
 fi
 
@@ -216,12 +195,16 @@ fi
 if (whiptail --title "Transmission" --yesno "Would you like to install Transmission (transmission-daemon)?" 8  78); then
     echo "::::: Installing transmission-daemon..."
     sudo apt-get install transmission-daemon
+    echo "::::: Stopping daemon..."
     sudo systemctl stop transmission-daemon
+    echo "::::: Creating hdd directory..."
     sudo mkdir /mnt/hdd
+    echo "::::: Changing settings.json..."
     cd /etc/transmission-daemon/
     sudo rm settings.json
     sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/settings.json
     #* Ask user for username (default 'transmission') and password
+    echo "::::: Starting daemon..."
     sudo systemctl start transmission-daemon
     TRNAMISSION_SAMBA=1
 fi
@@ -231,10 +214,12 @@ fi
 if (whiptail --title "Samba file share" --yesno "Would you like to install Samba file share?" 8  78); then
     echo "::::: Installing Samba..."
     sudo apt-get install samba samba-common-bin
+    echo "::::: Changing smb.conf..."
     cd /etc/samba/
     sudo rm smb.conf
-    sudo wget https://github.com/ray33ee/DHPiVPN/blob/master/smb.conf
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/smb.conf
     #* If transmission is not installed, remove the 'incomplete' and 'torrents' entries 
+    echo "::::: Restarting daemon..."
     sudo /etc/init.d/smbd restart
 fi
 
@@ -252,7 +237,9 @@ fi
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
     echo "::::: Installing Pi-Hole..."
     sudo curl -sSL https://install.pi-hole.net/ | bash
-    #* Use chosen IP to change DNS in server.conf
+    #* Change DNS IP in server.conf to 10.8.0.1
+    #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
+    #* Can we change Pi-Hole settings via config file?
 fi
 
 echo "::::: Installation complete"

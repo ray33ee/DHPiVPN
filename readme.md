@@ -37,6 +37,12 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 
 # To do
 
-* After the PiVPN installer script is downloaded, remove the code that prompts the user to reboot, as we do this at the end of our installer.
-* Detect if the user is using 'raspberry' as the password for the pi account. If so, strongly urge user to change.
-* Use updated firewall rules in dhpivpn_startup.sh
+* Find out if we can store IPVanish password as hash (possibly with a script from [here](https://openvpn.net/community-resources/using-alternative-authentication-methods/) or using [this](https://github.com/fionn/vpn_auth)?)
+* Setup Pi-Hole
+* Create program/script with basic tools like 
+  * Starting/stopping/restarting the openvpn server, openvpn outgoing anad transmission daemons
+  * Get the temperature of the system, network throughput (rx and tx), cpu usage or both openvpn daemons, and transmission
+  * Change the outgoing VPN server, stop the outgoing server altogether
+  * Start/pause all torrents, toggle turtle mode (both an be done with [this](https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt))and provide link to transmission web interface
+* Add script to reboot pi occasionally and update as well
+* Strengthen firewall via [this](https://www.comparitech.com/blog/vpn-privacy/raspberry-pi-vpn/#Lock_down_the_firewall) and add rules to dhpivpn_startup.sh
