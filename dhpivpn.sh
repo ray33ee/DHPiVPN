@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TRNAMISSION_SAMBA=0
+SAMBA_TYPE="partial"
 
 ### Update OS ###
 
@@ -185,6 +185,7 @@ if (whiptail --title "Continue" --yesno "Double hop VPN is now configured. Would
     :
 else
     if (whiptail --title "Reboot" --yesno "The installation is complete, and it is now safe to reboot. Would you like to reboot now?" 8  78); then
+        whiptail --title "Rebooting" --msgbox "Your device will now reboot..." 8 78
         sudo reboot
         sudo sleep 4
     fi
@@ -206,7 +207,7 @@ if (whiptail --title "Transmission" --yesno "Would you like to install Transmiss
     #* Ask user for username (default 'transmission') and password
     echo "::::: Starting daemon..."
     sudo systemctl start transmission-daemon
-    TRNAMISSION_SAMBA=1
+    SAMBA_TYPE="full"
 fi
 
 # Install Samba
@@ -217,10 +218,13 @@ if (whiptail --title "Samba file share" --yesno "Would you like to install Samba
     echo "::::: Changing smb.conf..."
     cd /etc/samba/
     sudo rm smb.conf
-    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/smb.conf
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/$SAMBA_TYPE_smb.conf
+    sudo mv $SAMBA_TYPE_smb.conf smb.conf
     #* If transmission is not installed, remove the 'incomplete' and 'torrents' entries 
     echo "::::: Restarting daemon..."
     sudo /etc/init.d/smbd restart
+    echo "::::: Changing permissions of ovpns..."
+    sudo chmod 775 /home/pi/ovpns
 fi
 
 # Install Apache & php
@@ -243,5 +247,11 @@ if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  7
 fi
 
 echo "::::: Installation complete"
+
+if (whiptail --title "Reboot" --yesno "The installation is complete, and it is now safe to reboot. Would you like to reboot now?" 8  78); then
+    whiptail --title "Rebooting" --msgbox "Your device will now reboot..." 8 78
+    sudo reboot
+    sleep 4
+fi  
 
 exit 0

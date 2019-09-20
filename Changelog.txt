@@ -1,3 +1,7 @@
+Version 1.0.7
+	- Split samba config into partial and full based on installation choices
+	- ovpns folder now gets permissions 775 if installing samba
+
 Version 1.0.6
 	- Default hostname chenged form blue to $HOSTNAME
 	- Increased verbosity for optional extras 
