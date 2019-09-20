@@ -1,3 +1,6 @@
+Version 1.0.9
+	- Removed update and upgrade from script
+
 Version 1.0.8
 	- Selecting no for optional extras  now exits script correctly
 	- Pi-Hole now installs first to avoid network issue

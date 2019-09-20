@@ -16,6 +16,9 @@ SAMBA_TYPE="partial"
 # Wait a few seconds to catch up
 #sudo sleep 4
 
+# Wait a few seconds to catch up
+#sudo sleep 4
+
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
@@ -30,11 +33,6 @@ fi
 
 echo "::::: Installing PiVPN..."
 
-<<<<<<< HEAD
-=======
-# Wait a few seconds to catch up
-sudo sleep 4
-
 # Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
@@ -45,7 +43,6 @@ if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  7
     #* Can we change Pi-Hole settings via config file?
 fi
 
->>>>>>> 9af95bc62c1217ef796b9972c70ee97a2920e19a
 # Download PiVPN installation script
 
 echo "::::: Obtaining PiVPN installer..."
