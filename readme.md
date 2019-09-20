@@ -46,3 +46,5 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
   * Start/pause all torrents, toggle turtle mode (both an be done with [this](https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt))and provide link to transmission web interface
 * Add script to reboot pi occasionally and update as well
 * Strengthen firewall via [this](https://www.comparitech.com/blog/vpn-privacy/raspberry-pi-vpn/#Lock_down_the_firewall) and add rules to dhpivpn_startup.sh
+* Check if pi's password is raspberry, if so prompt user to change
+* Ask user to enter transmission username and password, then remove hash from settings.json

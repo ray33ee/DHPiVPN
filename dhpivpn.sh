@@ -6,19 +6,29 @@ SAMBA_TYPE="partial"
 
 # Update and upgrade Pi
 
-echo "::::: Updating OS..."
-sudo apt-get update
+#echo "::::: Updating OS..."
+#sudo apt-get update
 
 
-echo "::::: Upgrading OS..."
-sudo apt-get upgrade
+#echo "::::: Upgrading OS..."
+#sudo apt-get upgrade
+
+# Wait a few seconds to catch up
+#sudo sleep 4
+
+### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
+
+if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
+    echo "::::: Installing Pi-Hole..."
+    sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
+    #* Change DNS IP in server.conf to 10.8.0.1
+    #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
+    #* Can we change Pi-Hole settings via config file?
+fi
 
 ### Install PiVPN ###
 
 echo "::::: Installing PiVPN..."
-
-# Wait a few seconds to catch up
-sudo sleep 4
 
 # Download PiVPN installation script
 
@@ -188,10 +198,12 @@ else
         whiptail --title "Rebooting" --msgbox "Your device will now reboot..." 8 78
         sudo reboot
         sudo sleep 4
+    else
+        exit 0
     fi
 fi
 
-# Install Transmissinon
+### Install Transmissinon
 
 if (whiptail --title "Transmission" --yesno "Would you like to install Transmission (transmission-daemon)?" 8  78); then
     echo "::::: Installing transmission-daemon..."
@@ -210,7 +222,7 @@ if (whiptail --title "Transmission" --yesno "Would you like to install Transmiss
     SAMBA_TYPE="full"
 fi
 
-# Install Samba
+### Install Samba
 
 if (whiptail --title "Samba file share" --yesno "Would you like to install Samba file share?" 8  78); then
     echo "::::: Installing Samba..."
@@ -227,23 +239,13 @@ if (whiptail --title "Samba file share" --yesno "Would you like to install Samba
     sudo chmod 775 /home/pi/ovpns
 fi
 
-# Install Apache & php
+### Install Apache & php
 
 if (whiptail --title "Apache web server" --yesno "Would you like to install Apache (apache2)?" 8  78); then
     echo "::::: Installing Apache..."
     sudo apt-get install apache2 -y
     sudo apt-get install php libapache2-mod-php -y
     #* Download web pages from github
-fi
-
-# Install Pi-Hole
-
-if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
-    echo "::::: Installing Pi-Hole..."
-    sudo curl -sSL https://install.pi-hole.net/ | bash
-    #* Change DNS IP in server.conf to 10.8.0.1
-    #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
-    #* Can we change Pi-Hole settings via config file?
 fi
 
 echo "::::: Installation complete"
