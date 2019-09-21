@@ -1,3 +1,7 @@
+Version 1.0.10
+	- User must update and upgrade Pi before installation
+	- Double installation of Pi-Hole fixed
+
 Version 1.0.9
 	- Removed update and upgrade from script
 

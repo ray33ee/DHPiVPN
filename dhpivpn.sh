@@ -4,27 +4,13 @@ SAMBA_TYPE="partial"
 
 ### Update OS ###
 
-# Update and upgrade Pi
-
-#echo "::::: Updating OS..."
-#sudo apt-get update
-
-
-#echo "::::: Upgrading OS..."
-#sudo apt-get upgrade
-
-# Wait a few seconds to catch up
-#sudo sleep 4
-
-# Wait a few seconds to catch up
-#sudo sleep 4
+#* Check Pi is up to date
 
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
     echo "::::: Installing Pi-Hole..."
     sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
-    #* Change DNS IP in server.conf to 10.8.0.1
     #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
     #* Can we change Pi-Hole settings via config file?
 fi
@@ -32,16 +18,6 @@ fi
 ### Install PiVPN ###
 
 echo "::::: Installing PiVPN..."
-
-# Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
-
-if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
-    echo "::::: Installing Pi-Hole..."
-    sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
-    #* Change DNS IP in server.conf to 10.8.0.1
-    #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
-    #* Can we change Pi-Hole settings via config file?
-fi
 
 # Download PiVPN installation script
 
@@ -99,7 +75,6 @@ VPN_SERVER="ipvanish-UK-London-lon-a01"
 
 # Download server ovpn file
 
-
 echo "::::: Get server file..."
 sudo wget "http://www.ipvanish.com/software/configs/$VPN_SERVER.ovpn"
 
@@ -129,7 +104,6 @@ echo ":::::Obtaining IPVanish login credentials..."
 
 # Create /etc/openvpn/passwd
 
-
 echo "::::: Create password file..."
 sudo touch /etc/openvpn/passwd
 
@@ -145,7 +119,6 @@ sudo sh -c "echo $VPN_EMAIL > /etc/openvpn/passwd"
 sudo sh -c "echo $VPN_PASSWORD >> /etc/openvpn/passwd"
 
 # Secure file permissions
-
 
 echo "::::: Update permissions..."
 sudo chmod +600 /etc/openvpn/passwd

@@ -15,7 +15,14 @@ Installing DHPiVPN is quite simple. The only prerequisite is a static IP, as the
 1. Install the latest (preferebly lite) version of raspbian (instructions can be found [here](https://www.raspberrypi.org/documentation/installation/installing-images/))
 2. Setup a static IP by uncommenting the example static IP configuration, and changing the network interface device (eth0), IP address and IP Gateway to your own values. (NOTE: It is best to check your router for the range of allocatable IP addresses, and choose one out of this range to avoid conflicts)
 3. (Optional) To use SSH, a must for headless setups, follow the instructions found [here](https://www.raspberrypi.org/documentation/remote-access/ssh/).
-4. Finally install using the command
+4. Update and upgrade your Pi using the following commands
+
+```sh
+sudo apt-get update
+sudo apt-get upgrade
+```
+
+4. Finally install DHPiVPN using the command
 
 ```sh
 curl -L https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn.sh | bash
@@ -48,3 +55,4 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 * Strengthen firewall via [this](https://www.comparitech.com/blog/vpn-privacy/raspberry-pi-vpn/#Lock_down_the_firewall) and add rules to dhpivpn_startup.sh
 * Check if pi's password is raspberry, if so prompt user to change
 * Ask user to enter transmission username and password, then remove hash from settings.json
+* Change the DNS server in server.conf based on whether Pi-Hole is installed
