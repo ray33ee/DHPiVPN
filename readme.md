@@ -54,3 +54,4 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 * Check if pi's password is raspberry, if so prompt user to change
 * Ask user to enter transmission username and password, then remove hash from settings.json
 * Change the DNS server in server.conf based on whether Pi-Hole is installed
+* Suppress static ip warning in PiPVN installation if already shown in pihole installation

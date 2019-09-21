@@ -1,3 +1,10 @@
+Version 1.0.12
+	- Spelling mistake in default password verification
+	- Automatically enable 'listen on all devices' for Pi-Hole
+	- If Pihole is used, server.conf uses single DNS at 10.8.0.1
+	- After Pihole installation the user is informed of the two ways to use pihole as DNS (i.e. local and vpn)
+	- Minor typos fixed
+
 Version 1.0.11
 	- Added more strict firewall settings in dhpivpn_startup.sh
 	- If user has default password, user will be prompted to change 

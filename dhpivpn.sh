@@ -1,10 +1,15 @@
 #!/bin/sh
 
 SAMBA_TYPE="partial"
+PI_HOLE="off"
 
 ### Update OS ###
 
 #* Check Pi is up to date
+
+#* Check for whiptail, install if not found
+
+#* Check for whois, install if not found
 
 ### Make sure user has secure password
 
@@ -12,34 +17,45 @@ sudo apt-get install whois
 
 # Use the seed and the default password to generate a hash for the default password, 'raspberry'
 
-DEFAULT_HASH=$(sudo awk -F: '/[$]/{ split($2, hash, "$");  seed = hash[3]; system("mkpasswd --method=SHA-512 --salt=" seed " raspbery") }' /etc/shadow)
+DEFAULT_HASH=$(sudo awk -F: '/[$]/{ split($2, hash, "$");  seed = hash[3]; system("mkpasswd --method=SHA-512 --salt=" seed " raspberry") }' /etc/shadow)
 
 # Take the hash from the user profile in shadow
 
 ACTUAL_HASH=$(sudo awk -F: '/[$]/{ print $2 }' /etc/shadow)
 
-echo $DEFAULT_HASH
-echo $ACTUAL_HASH
-
 # If the two hashes are the same, the user still has the default password
 
-if [ $DEFAULT_HASH == $ACTUAL_HASH ]
-    if (whiptail --title "Change Password" --yesno "The installer has detected you are using the default password shipped with the Pi. Since this Pi will be exposed to the internet, this is not a good idea. Would you like to change the password now?" 10  78)
+if [ $DEFAULT_HASH == $ACTUAL_HASH ]; then
+    if (whiptail --title "Change Password" --yesno "The installer has detected you are using the default password shipped with the Pi. Since this Pi will be exposed to the internet, this is not a good idea. Would you like to change the password now?" 10  78); then
         passwd
     fi
 fi
-
 
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
     echo "::::: Installing Pi-Hole..."
     sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
-    #* Tell user to select 'Listen on all interfaces' in Settings, DNS (DNSMASQ_LISTENING=local?)
-    #* Change DNS via /etc/pihole/setupVars.conf
 
-    #* Tell user they can connect to Pi-Hole through PiVPN (10.8.0.2) or as a local device (192.168.0.5, or w/e device they chose)
-    #* Tell the user they can use custom DNS (like the IPVanish DNS servers) via Settings, DNS.
+    # Enable 'Listen on all interfaces', to allow Pi hole to work over VPN
+
+    echo "::::: Enabling listen on all devices..."
+
+    pihole disable
+
+    sudo sh -c 'echo DNSMASQ_LISTENING=local >> /etc/pihole/setupVars.conf'
+    sudo sh -c 'echo DNS_FQDN_REQUIRED=true >> /etc/pihole/setupVars.conf'
+    sudo sh -c 'echo DNS_BOGUS_PRIV=true >> /etc/pihole/setupVars.conf'
+    sudo sh -c 'echo DNSSEC=false >> /etc/pihole/setupVars.conf'
+    sudo sh -c 'echo CONDITIONAL_FORWARDING=false >> /etc/pihole/setupVars.conf'
+
+    pihole enable
+
+    # Tell user they can connect to Pi-Hole through PiVPN (10.8.0.2) or as a local device (192.168.0.5, or w/e device they chose)
+
+    whiptail --title "Connection" --msgbox "You will now be able to use this Pi as a DNS server via a local connection or, if you install PiVPN, via VPN connection (on 10.8.0.1)." 8 78
+
+    PI_HOLE="on"
 fi
 
 ### Install PiVPN ###
@@ -53,12 +69,27 @@ wget --output-document=/tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh h
 
 # Before we start, remove the code that prompts the user to reboot
 
+echo "::::: Remove prompt from install.sh..."
 awk 'BEGIN {findCount = 0} { if (match($0, "displayFinalMessage")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh > /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 
-# Import installation script
+# If we are using Pi Hole, don't ask for DNS server, as we will use 10.8.0.1
 
-echo "::::: Execute installer..."
-source /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+echo $PI_HOLE
+
+if [ $PI_HOLE == "on" ]; then
+    echo "::::: Remove DNS prompt..."
+    awk 'BEGIN {findCount = 0} { if (match($0, "setClientDNS")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh > /tmp/PiVPNInstaller-b3bf60b851ebaeb2768b01a32e2ef32f.sh
+fi
+
+# Install Pivpn
+
+if [ $PI_HOLE == "on" ]; then
+    echo "::::: Execute installer..."
+    source /tmp/PiVPNInstaller-b3bf60b851ebaeb2768b01a32e2ef32f.sh
+else
+    echo "::::: Execute installer..."
+    source /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+fi
 
 # Make sure installation was successful, if not, break
 
@@ -66,9 +97,6 @@ if [ $? != 0 ]; then
 	echo "Error ($?) installing PiVPN"
 	exit 1
 fi
-
-echo "Chosen IP: $IPv4addr"
-echo "Chosen GW: $IPv4gw"
 
 # Ask user if they want to change hostname, if so, ask for new name
 
@@ -140,7 +168,6 @@ VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 --title
 
 VPN_PASSWORD=$(whiptail --passwordbox "Please enter your IPVanish password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
 
-
 echo "::::: Writing credentials..."
 sudo sh -c "echo $VPN_EMAIL > /etc/openvpn/passwd"
 sudo sh -c "echo $VPN_PASSWORD >> /etc/openvpn/passwd"
@@ -158,12 +185,19 @@ echo ":::::Modifying server.conf"
 
 sudo sed -i 's/dev tun/dev tun-incoming\ndev-type tun/' server.conf
 
+# If user installed Pi-Hole, change the DNS to 10.8.0.1
+
+if [ $PI_HOLE == "on" ]; then
+    # Remove all current DNS servers
+    sudo sed -i '/push "dhcp-option DNS/d' server.conf
+    sudo sh -c 'echo "push \"dhcp-option DNS 10.8.0.1\"" >> server.conf'
+fi
+
 ### Final steps ###
 
 echo ":::::Final steps..."
 
 # Create and fill the file  /lib/dhcpcd/dhcpcd-hooks/40-routes
-
 
 echo "::::: Updating routing tables..."
 sudo touch /lib/dhcpcd/dhcpcd-hooks/40-routes
@@ -173,13 +207,11 @@ sudo sh -c "echo \"ip route add default via $IPv4gw table 101\" >> /lib/dhcpcd/d
 
 # Download startup script from github to /etc/
 
-
 echo "::::: Downloading startup script..."
 cd /etc/
 sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn_startup.sh
 
 # Call script from /etc/rc.local
-
 
 echo "::::: Call script from rc.local..."
 sudo sed -i '7,$ s/exit 0//' /etc/rc.local # remove exit 0
@@ -193,7 +225,6 @@ sudo sh -c 'echo "exit 0" >> /etc/rc.local'
 sudo sed -i 's/#AUTOSTART="home office"/AUTOSTART="server outgoing"/' /etc/default/openvpn
 
 # Start the servers
-
 
 echo "::::: Start servers..."
 sudo service openvpn@outgoing start
@@ -264,6 +295,7 @@ echo "::::: Installation complete"
 
 if (whiptail --title "Reboot" --yesno "The installation is complete, and it is now safe to reboot. Would you like to reboot now?" 8  78); then
     whiptail --title "Rebooting" --msgbox "Your device will now reboot..." 8 78
+    echo "::::: Rebooting..."
     sudo reboot
     sleep 4
 fi  
