@@ -6,13 +6,40 @@ SAMBA_TYPE="partial"
 
 #* Check Pi is up to date
 
+### Make sure user has secure password
+
+sudo apt-get install whois
+
+# Use the seed and the default password to generate a hash for the default password, 'raspberry'
+
+DEFAULT_HASH=$(sudo awk -F: '/[$]/{ split($2, hash, "$");  seed = hash[3]; system("mkpasswd --method=SHA-512 --salt=" seed " raspbery") }' /etc/shadow)
+
+# Take the hash from the user profile in shadow
+
+ACTUAL_HASH=$(sudo awk -F: '/[$]/{ print $2 }' /etc/shadow)
+
+echo $DEFAULT_HASH
+echo $ACTUAL_HASH
+
+# If the two hashes are the same, the user still has the default password
+
+if [ $DEFAULT_HASH == $ACTUAL_HASH ]
+    if (whiptail --title "Change Password" --yesno "The installer has detected you are using the default password shipped with the Pi. Since this Pi will be exposed to the internet, this is not a good idea. Would you like to change the password now?" 10  78)
+        passwd
+    fi
+fi
+
+
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
     echo "::::: Installing Pi-Hole..."
     sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
-    #* Tell user to select 'Listen on all interfaces' in Settings, DNS.
-    #* Can we change Pi-Hole settings via config file?
+    #* Tell user to select 'Listen on all interfaces' in Settings, DNS (DNSMASQ_LISTENING=local?)
+    #* Change DNS via /etc/pihole/setupVars.conf
+
+    #* Tell user they can connect to Pi-Hole through PiVPN (10.8.0.2) or as a local device (192.168.0.5, or w/e device they chose)
+    #* Tell the user they can use custom DNS (like the IPVanish DNS servers) via Settings, DNS.
 fi
 
 ### Install PiVPN ###
@@ -216,9 +243,8 @@ if (whiptail --title "Samba file share" --yesno "Would you like to install Samba
     echo "::::: Changing smb.conf..."
     cd /etc/samba/
     sudo rm smb.conf
-    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/$SAMBA_TYPE_smb.conf
-    sudo mv $SAMBA_TYPE_smb.conf smb.conf
-    #* If transmission is not installed, remove the 'incomplete' and 'torrents' entries 
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/${SAMBA_TYPE}_smb.conf
+    sudo mv ${SAMBA_TYPE}_smb.conf smb.conf
     echo "::::: Restarting daemon..."
     sudo /etc/init.d/smbd restart
     echo "::::: Changing permissions of ovpns..."
