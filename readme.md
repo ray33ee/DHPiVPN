@@ -8,6 +8,12 @@ At its most basic, it is able to configure the inbound and outbound OpenVPN conn
 
 Setting up a double-hop VPN is not an easy task, especially for those new to networking and its principles. DHPiVPN aims to make this process easy. It is important to note that some aspects may need configuring as they won't apply to all cases. A list of such changes is given below
 
+# Features
+
+[Write paragraph summarising the features of DHPiVPN]
+
+* List - Include a list of all featrures with more detail
+
 # Installation
 
 Installing DHPiVPN is quite simple. The only prerequisite is a static IP, as the installer takes care of the rest! (It is important to note that automatically configuring a static IP from DHPiVPN was deemed pointless as the user will almost certainly be installing from a headless configuration, with a static IP already configured.)
@@ -51,7 +57,7 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
   * Change the outgoing VPN server, stop the outgoing server altogether
   * Start/pause all torrents, toggle turtle mode (both an be done with [this](https://github.com/transmission/transmission/blob/master/extras/rpc-spec.txt))and provide link to transmission web interface
 * Add script to reboot pi occasionally and update as well
-* Check if pi's password is raspberry, if so prompt user to change
-* Ask user to enter transmission username and password, then remove hash from settings.json
-* Change the DNS server in server.conf based on whether Pi-Hole is installed
 * Suppress static ip warning in PiPVN installation if already shown in pihole installation
+* Remove custom search domain prompt
+* Clean up script Todos
+* Finish 'features' section of readme

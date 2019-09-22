@@ -13,7 +13,7 @@ PI_HOLE="off"
 
 ### Make sure user has secure password
 
-sudo apt-get install whois
+sudo apt-get -y install whois
 
 # Use the seed and the default password to generate a hash for the default password, 'raspberry'
 
@@ -31,29 +31,40 @@ if [ $DEFAULT_HASH == $ACTUAL_HASH ]; then
     fi
 fi
 
+
+#* Check return value of passwd to inform user of success/fail
+
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
 if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  78); then
     echo "::::: Installing Pi-Hole..."
     sudo sh -c 'curl -sSL https://install.pi-hole.net/ | bash'
 
-    # Enable 'Listen on all interfaces', to allow Pi hole to work over VPN
+    sync
 
-    echo "::::: Enabling listen on all devices..."
+    #* Enable 'Listen on all interfaces', to allow Pi hole to work over VPN
 
-    pihole disable
+    #echo "::::: Enabling listen on all devices..."
 
-    sudo sh -c 'echo DNSMASQ_LISTENING=local >> /etc/pihole/setupVars.conf'
-    sudo sh -c 'echo DNS_FQDN_REQUIRED=true >> /etc/pihole/setupVars.conf'
-    sudo sh -c 'echo DNS_BOGUS_PRIV=true >> /etc/pihole/setupVars.conf'
-    sudo sh -c 'echo DNSSEC=false >> /etc/pihole/setupVars.conf'
-    sudo sh -c 'echo CONDITIONAL_FORWARDING=false >> /etc/pihole/setupVars.conf'
+    #pihole disable
 
-    pihole enable
+    #sudo sh -c 'echo DNSMASQ_LISTENING=local >> /etc/pihole/setupVars.conf'
+    #sudo sh -c 'echo DNS_FQDN_REQUIRED=true >> /etc/pihole/setupVars.conf'
+    #sudo sh -c 'echo DNS_BOGUS_PRIV=true >> /etc/pihole/setupVars.conf'
+    #sudo sh -c 'echo DNSSEC=false >> /etc/pihole/setupVars.conf'
+    #sudo sh -c 'echo CONDITIONAL_FORWARDING=false >> /etc/pihole/setupVars.conf'
+
+    #pihole enable
+
+    #pihole restartdns  
+
+    # Tell user to switch to 'Listen on all devices' in Settings, DNS
+
+    whiptail --title "Listen on all devices" --msgbox "In order for incoming VPN connections to use PiHole as a DNS, you need to selct 'Listen on all devices' under Settings, DNS in the web interface." 8 78
 
     # Tell user they can connect to Pi-Hole through PiVPN (10.8.0.2) or as a local device (192.168.0.5, or w/e device they chose)
 
-    whiptail --title "Connection" --msgbox "You will now be able to use this Pi as a DNS server via a local connection or, if you install PiVPN, via VPN connection (on 10.8.0.1)." 8 78
+    #whiptail --title "Connection" --msgbox "You will now be able to use this Pi as a DNS server via a local connection or, if you install PiVPN, via VPN connection (on 10.8.0.1)." 8 78
 
     PI_HOLE="on"
 fi
@@ -189,6 +200,7 @@ sudo sed -i 's/dev tun/dev tun-incoming\ndev-type tun/' server.conf
 
 if [ $PI_HOLE == "on" ]; then
     # Remove all current DNS servers
+    echo "::::: Edit DNS in server.conf..."
     sudo sed -i '/push "dhcp-option DNS/d' server.conf
     sudo sh -c 'echo "push \"dhcp-option DNS 10.8.0.1\"" >> server.conf'
 fi
@@ -251,7 +263,7 @@ fi
 
 if (whiptail --title "Transmission" --yesno "Would you like to install Transmission (transmission-daemon)?" 8  78); then
     echo "::::: Installing transmission-daemon..."
-    sudo apt-get install transmission-daemon
+    sudo apt-get -y install transmission-daemon
     echo "::::: Stopping daemon..."
     sudo systemctl stop transmission-daemon
     echo "::::: Creating hdd directory..."
@@ -260,7 +272,19 @@ if (whiptail --title "Transmission" --yesno "Would you like to install Transmiss
     cd /etc/transmission-daemon/
     sudo rm settings.json
     sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/settings.json
-    #* Ask user for username (default 'transmission') and password
+    # Ask user for username (default 'transmission') and password
+
+    TRANSMISSION_USERNAME=$(whiptail --inputbox "Please chose the username for transmission:" 8 78 transmission --title "Username" 3>&1 1>&2 2>&3)
+
+    TRANSMISSION_PASSWORD1=$(whiptail --passwordbox "Please enter the transmission password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
+
+    # Add username and password to settings.json
+
+    sudo sed -i "s/\"rpc-username\": \"\"/\"rpc-username\": \"$TRANSMISSION_USERNAME\"/" settings.json
+    sudo sed -i "s/\"rpc-password\": \"\"/\"rpc-password\": \"$TRANSMISSION_PASSWORD1\"/" settings.json
+
+    #  user for password second time, then verify
+
     echo "::::: Starting daemon..."
     sudo systemctl start transmission-daemon
     SAMBA_TYPE="full"
@@ -270,16 +294,22 @@ fi
 
 if (whiptail --title "Samba file share" --yesno "Would you like to install Samba file share?" 8  78); then
     echo "::::: Installing Samba..."
-    sudo apt-get install samba samba-common-bin
+    sudo apt-get -y install samba samba-common-bin
     echo "::::: Changing smb.conf..."
     cd /etc/samba/
     sudo rm smb.conf
     sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/${SAMBA_TYPE}_smb.conf
     sudo mv ${SAMBA_TYPE}_smb.conf smb.conf
+    echo "::::: Adding Samba user and group..."
+    #sudo addgroup smbgrp
+    #sudo useradd smbusr -G smbgrp
+    #whiptail --title "Connection" --msgbox "You will now be prompted for a password for Samba filesharing." 8 78
+    #sudo smbpasswd -a smbusr    
+    sudo chmod 775 /home/pi/ovpns
     echo "::::: Restarting daemon..."
     sudo /etc/init.d/smbd restart
     echo "::::: Changing permissions of ovpns..."
-    sudo chmod 775 /home/pi/ovpns
+    #sudo chown root:smbgrp /home/pi/ovpns
 fi
 
 ### Install Apache & php
