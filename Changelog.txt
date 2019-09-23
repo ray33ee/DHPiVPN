@@ -1,3 +1,11 @@
+Version 1.1.0
+	- Custom search domain prompt removed
+	- Added dhpivpn.io to hosts
+	- Listen on all devices now implemented during install
+	- Double DHCP conflict message removed
+	- Incorrectly displayed 'Password Changeed' dialog fixed
+	- VPN server change script adde (cvpns.sh)
+	
 Version 1.0.13
 	- Transmission installation now prompts user for username and password
 	- Fixed VPN not using PiHole DNS bug

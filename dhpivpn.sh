@@ -5,8 +5,6 @@ PI_HOLE="off"
 
 ### Update OS ###
 
-#* Check Pi is up to date
-
 #* Check for whiptail, install if not found
 
 #* Check for whois, install if not found
@@ -29,10 +27,20 @@ if [ $DEFAULT_HASH == $ACTUAL_HASH ]; then
     if (whiptail --title "Change Password" --yesno "The installer has detected you are using the default password shipped with the Pi. Since this Pi will be exposed to the internet, this is not a good idea. Would you like to change the password now?" 10  78); then
         passwd
     fi
+
+    # Check return value of passwd to inform user of success/fail
+
+    EXIT_VALUE=$?
+
+    if [ $EXIT_VALUE != 0 ]; then
+        whiptail --title "Password unchanged" --msgbox "Password was not changed. Passwd exited with error code $EXIT_VALUE." 8 78
+    else
+        whiptail --title "Password changed" --msgbox "Password was successfully changed." 8 78
+    fi
 fi
 
 
-#* Check return value of passwd to inform user of success/fail
+
 
 ### Install Pi-Hole first (don't do it last, just don't. If you do, the Pi will stop networking)
 
@@ -42,29 +50,13 @@ if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  7
 
     sync
 
-    #* Enable 'Listen on all interfaces', to allow Pi hole to work over VPN
+    # Enable 'Listen on all interfaces', to allow Pi hole to work over VPN
 
-    #echo "::::: Enabling listen on all devices..."
-
-    #pihole disable
-
-    #sudo sh -c 'echo DNSMASQ_LISTENING=local >> /etc/pihole/setupVars.conf'
-    #sudo sh -c 'echo DNS_FQDN_REQUIRED=true >> /etc/pihole/setupVars.conf'
-    #sudo sh -c 'echo DNS_BOGUS_PRIV=true >> /etc/pihole/setupVars.conf'
-    #sudo sh -c 'echo DNSSEC=false >> /etc/pihole/setupVars.conf'
-    #sudo sh -c 'echo CONDITIONAL_FORWARDING=false >> /etc/pihole/setupVars.conf'
-
-    #pihole enable
-
-    #pihole restartdns  
+    pihole -a interface local
 
     # Tell user to switch to 'Listen on all devices' in Settings, DNS
 
     whiptail --title "Listen on all devices" --msgbox "In order for incoming VPN connections to use PiHole as a DNS, you need to selct 'Listen on all devices' under Settings, DNS in the web interface." 8 78
-
-    # Tell user they can connect to Pi-Hole through PiVPN (10.8.0.2) or as a local device (192.168.0.5, or w/e device they chose)
-
-    #whiptail --title "Connection" --msgbox "You will now be able to use this Pi as a DNS server via a local connection or, if you install PiVPN, via VPN connection (on 10.8.0.1)." 8 78
 
     PI_HOLE="on"
 fi
@@ -78,10 +70,15 @@ echo "::::: Installing PiVPN..."
 echo "::::: Obtaining PiVPN installer..."
 wget --output-document=/tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh https://install.pivpn.io/
 
+# Remove the prompt to setup custom search domain
+
+echo "::::: Remove CSD prompt from install.sh..."
+awk 'BEGIN {findCount = 0} { if (match($0, "setCustomDomain")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh > /tmp/PiVPNInstaller-f014b94c35268c600ab22ef3e885b54f.sh
+
 # Before we start, remove the code that prompts the user to reboot
 
 echo "::::: Remove prompt from install.sh..."
-awk 'BEGIN {findCount = 0} { if (match($0, "displayFinalMessage")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-ad8cc55ab4bbb7882788337140558475.sh > /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+awk 'BEGIN {findCount = 0} { if (match($0, "displayFinalMessage")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-f014b94c35268c600ab22ef3e885b54f.sh > /tmp/PiVPNInstaller-off-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 
 # If we are using Pi Hole, don't ask for DNS server, as we will use 10.8.0.1
 
@@ -89,18 +86,17 @@ echo $PI_HOLE
 
 if [ $PI_HOLE == "on" ]; then
     echo "::::: Remove DNS prompt..."
-    awk 'BEGIN {findCount = 0} { if (match($0, "setClientDNS")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh > /tmp/PiVPNInstaller-b3bf60b851ebaeb2768b01a32e2ef32f.sh
+    awk 'BEGIN {findCount = 0} { if (match($0, "setClientDNS")) { if (findCount == 1) { print ":" } else { print } findCount++ } else { print } }' /tmp/PiVPNInstaller-off-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh > /tmp/PiVPNInstaller-on-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+    echo "::::: Remove DHCP conflict prompt..."
+    sudo sed -i "/FYI: IP Conflict/d" /tmp/PiVPNInstaller-on-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+    sudo sed -i "/If you are worried/d" /tmp/PiVPNInstaller-on-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
+    sudo sed -i '/It is also possible to/ c :'  /tmp/PiVPNInstaller-on-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 fi
 
 # Install Pivpn
 
-if [ $PI_HOLE == "on" ]; then
-    echo "::::: Execute installer..."
-    source /tmp/PiVPNInstaller-b3bf60b851ebaeb2768b01a32e2ef32f.sh
-else
-    echo "::::: Execute installer..."
-    source /tmp/PiVPNInstaller-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
-fi
+echo "::::: Execute installer..."
+source /tmp/PiVPNInstaller-${PI_HOLE}-9ae73c65f418e6f79ceb4f0e4a4b98d5.sh
 
 # Make sure installation was successful, if not, break
 
@@ -119,6 +115,7 @@ if (whiptail --title "Change hostname" --yesno "Would you like to change the hos
     else
         sudo sh -c "echo \"$HOSTNAME\" > /etc/hostname"
         sudo sed -i "/127.0.1.1/ c 127.0.1.1       $HOSTNAME" /etc/hosts
+        sudo sh -c 'echo "10.8.0.1        dhpivpn.io" >> /etc/hosts'
     fi
 fi
 

@@ -51,7 +51,7 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 # To do
 
 * Find out if we can store IPVanish password as hash (possibly with a script from [here](https://openvpn.net/community-resources/using-alternative-authentication-methods/) or using [this](https://github.com/fionn/vpn_auth)?)
-* Create program/script with basic tools like 
+* Create program/script with basic tools like (use hyperlinks via localhost)
   * Starting/stopping/restarting the openvpn server, openvpn outgoing anad transmission daemons
   * Get the temperature of the system, network throughput (rx and tx), cpu usage or both openvpn daemons, and transmission
   * Change the outgoing VPN server, stop the outgoing server altogether
@@ -61,3 +61,4 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 * Remove custom search domain prompt
 * Clean up script Todos
 * Finish 'features' section of readme
+* Add option to make device invisible over LAN? Maybe block all traffic from 192.168.0.0/16,  except router (192.168.0.1) (So the only way to connect will be via seure VPN)
