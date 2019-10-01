@@ -1,6 +1,12 @@
+Version 1.1.1
+	- Add support for No-IP Dynamic DNS
+	- Root directory of repo reorganised
+	- Added script to change outgoing VPN server
+	- Added web server 
+
 Version 1.1.0
 	- Custom search domain prompt removed
-	- Added dhpivpn.io to hosts
+	- Added dhpivpn.io to /etc/hosts
 	- Listen on all devices now implemented during install
 	- Double DHCP conflict message removed
 	- Incorrectly displayed 'Password Changeed' dialog fixed

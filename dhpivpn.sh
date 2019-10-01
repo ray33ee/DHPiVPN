@@ -54,10 +54,16 @@ if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  7
 
     pihole -a interface local
 
-    # Tell user to switch to 'Listen on all devices' in Settings, DNS
+    # Copy settings over
+    wget --output-document=/tmp/PiHoleAdlist-bfe63bd5739d2ab82a20f96e44a0eb9a https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/pihole/adlists.list
+    wget --output-document=/tmp/PiHoleWhitelist-dc20dd1f615c3fd188c708858bb6d649 https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/pihole/whitelist.txt
 
-    whiptail --title "Listen on all devices" --msgbox "In order for incoming VPN connections to use PiHole as a DNS, you need to selct 'Listen on all devices' under Settings, DNS in the web interface." 8 78
+    sudo mv /tmp/PiHoleAdlist-bfe63bd5739d2ab82a20f96e44a0eb9a /etc/pihole/adlists.list
+    sudo mv /tmp/PiHoleWhitelist-dc20dd1f615c3fd188c708858bb6d649 /etc/pihole/whitelist.txt
 
+    # Restart DNS server
+    pihole restartdns
+    
     PI_HOLE="on"
 fi
 
@@ -176,6 +182,8 @@ VPN_EMAIL=$(whiptail --inputbox "Please enter your IPVanish email:" 8 78 --title
 
 VPN_PASSWORD=$(whiptail --passwordbox "Please enter your IPVanish password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
 
+#* Ask user to confirm password
+
 echo "::::: Writing credentials..."
 sudo sh -c "echo $VPN_EMAIL > /etc/openvpn/passwd"
 sudo sh -c "echo $VPN_PASSWORD >> /etc/openvpn/passwd"
@@ -218,7 +226,7 @@ sudo sh -c "echo \"ip route add default via $IPv4gw table 101\" >> /lib/dhcpcd/d
 
 echo "::::: Downloading startup script..."
 cd /etc/
-sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/dhpivpn_startup.sh
+sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/scripts/dhpivpn_startup.sh
 
 # Call script from /etc/rc.local
 
@@ -256,6 +264,26 @@ else
     fi
 fi
 
+### Install No-IP DDNS client
+
+if (whiptail --title "Dynamic DNS" --yesno "Would you like to install No-IP's Dynamic Update Client?" 8  78); then
+    echo "::::: Fetching No-IP software..."
+    cd /tmp
+    wget --output-document=NoIPDDNSInstaller-6495fa7db8769024ebd3b653856bd2bb.tar.gz https://www.noip.com/client/linux/noip-duc-linux.tar.gz
+    echo "::::: Unzipping archive..."
+    tar vzxf NoIPDDNSInstaller-6495fa7db8769024ebd3b653856bd2bb.tar.gz
+    cd noip-*
+    echo "::::: Installing No-IP Client.."
+    sudo make
+    sudo make install
+    echo "::::: Running client..."
+    sudo /usr/local/bin/noip2
+    #echo "::::: Adding client to startup script..."
+
+fi
+
+
+
 ### Install Transmissinon
 
 if (whiptail --title "Transmission" --yesno "Would you like to install Transmission (transmission-daemon)?" 8  78); then
@@ -268,12 +296,14 @@ if (whiptail --title "Transmission" --yesno "Would you like to install Transmiss
     echo "::::: Changing settings.json..."
     cd /etc/transmission-daemon/
     sudo rm settings.json
-    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/settings.json
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/transmission/settings.json
     # Ask user for username (default 'transmission') and password
 
     TRANSMISSION_USERNAME=$(whiptail --inputbox "Please chose the username for transmission:" 8 78 transmission --title "Username" 3>&1 1>&2 2>&3)
 
     TRANSMISSION_PASSWORD1=$(whiptail --passwordbox "Please enter the transmission password:" 8 78 --title "Password" 3>&1 1>&2 2>&3)
+
+    #* Ask user to confirm password
 
     # Add username and password to settings.json
 
@@ -295,7 +325,7 @@ if (whiptail --title "Samba file share" --yesno "Would you like to install Samba
     echo "::::: Changing smb.conf..."
     cd /etc/samba/
     sudo rm smb.conf
-    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/${SAMBA_TYPE}_smb.conf
+    sudo wget https://raw.githubusercontent.com/ray33ee/DHPiVPN/master/samba/${SAMBA_TYPE}_smb.conf
     sudo mv ${SAMBA_TYPE}_smb.conf smb.conf
     echo "::::: Adding Samba user and group..."
     #sudo addgroup smbgrp
