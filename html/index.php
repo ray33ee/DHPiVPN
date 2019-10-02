@@ -151,16 +151,16 @@
 				</div>
 
 				<div class="row clearfix">
-					<div class="col" style="margin-right: 200px"> 
-						<canvas id="cpu_chart" style="display: block;" height="190px"></canvas>
+					<div class="col" style="margin-right: 100px"> 
+						<canvas id="cpu_chart" style="display: block;" height="300px" width="450px"></canvas>
 					</div>
-					<div class="col" style="margin-right: 200px"> 
-						<canvas id="mem_chart" style="display: block;" height="190px"></canvas>
+					<div class="col" style="margin-right: 100px"> 
+						<canvas id="mem_chart" style="display: block;" height="300px" width="450px"></canvas>
 					</div>
 				</div>
 
 				<div id="debug" class="row clearfix">
-					clearer gradient on yellow and green. Bigger adjustment on the yellow.
+					clearer gradient on yellow and green. Bigger adjustment on the yellow. Sum up CPU and Memory free and idle and show in charts
 				</div>
 			</div>
 		</div>

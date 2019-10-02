@@ -12,7 +12,7 @@
 		return shell_exec("dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F\"\\\"\" '{print $2}'");
 	}
 
-	function memPercentage()
+	function totalMemPercentage()
 	{
 		$TotalMem = shell_exec("free -k | awk '/Mem:/ {print $2}'");
 		$UsedMem = shell_exec("free -k | awk '/Mem:/ {print $3}'");
@@ -26,7 +26,7 @@
 
 	function Bandwidth()
 	{
-		return shell_exec("vnstat -tr 2 | awk '/tx/ {printf(\"<p id=\\\"tx\\\">%s%s<p>\", $2, $3)} /rx/ {printf(\"<p id=\\\"rx\\\">%s%s<p>\", $2, $3)}' ");
+		return shell_exec("vnstat -i eth0 --xml | awk '/<total>/ { print $1 }'");
 	}
 
 	function whatsInstalled()
@@ -52,7 +52,7 @@
 	{
 		if ($name == "pihole-FTL") //If the process is pihole, find the pid via pidof
 		{
-			return shell_exec("pidof pihole-FTL");
+			return shell_exec("pidof pihole-FTL | awk '{printf(\"%s\", $0)}'");
 		}
 		else //For the other daemons, use service
 		{
@@ -77,38 +77,47 @@
 
 ?>
 
-System:
-<p id="mp"><?php $Percentage = memPercentage(); echo $Percentage; ?></p>
-<p id="cpul"><?php $Load = CPULoad(); echo $Load; ?></p>
-Outbound VPN:
-<p id="vpn"><?php $VPN = getVPNName(); echo $VPN; ?></p>
-<p id="eip"><?php $ExternalIP = externalIP(); echo $ExternalIP; ?></p>
-Daemons:
-<p id="bin"><?php $Installed = whatsInstalled(); echo $Installed; ?></p>
-Bandwidth:
-<?php echo Bandwidth(); ?>
+<html>
 
-Snapshot:
-<div id="snap">
-	<?php
-		$daemons = getDaemonList();
-		foreach ($daemons as $val)
-		{
-			echo "<div id=\"".$val."\">";
-			$pid = getPID($val);
-			echo "<p id=\"${val}_pid\">$pid</p>";
-			echo "<p id=\"${val}_mem\">".getMemory($pid)."</p>";
-			echo "<p id=\"${val}_cpu\">".getCPUTime($pid)."</p>";
-			echo "<p id=\"${val}_status\">".getStatus($val)."</p>";
-			echo "</div>";
-		}
-		echo "<p id=\"cpu_elapsed\">".getCPUElapsed()."</p>";
-	?>
-	
-</div>
+	<body>
+
+		
+
+		System:
+		<p id="mp"><?php $Percentage = totalMemPercentage(); echo $Percentage; ?></p>
+		<p id="cpul"><?php $Load = CPULoad(); echo $Load; ?></p>
+		Outbound VPN:
+		<p id="vpn"><?php $VPN = getVPNName(); echo $VPN; ?></p>
+		<p id="eip"><?php $ExternalIP = externalIP(); echo $ExternalIP; ?></p>
+		Daemons:
+		<p id="bin"><?php $Installed = whatsInstalled(); echo $Installed; ?></p>
+		Bandwidth:
+		<?php 
+			shell_exec("sudo vnstat -u"); //Update
+			echo Bandwidth(); 
+		?>
+
+		Snapshot:
+		<div id="snap">
+			<?php
+				$daemons = getDaemonList();
+				foreach ($daemons as $val)
+				{
+					echo "<div id=\"".$val."\">";
+					$pid = getPID($val);
+					echo "<p id=\"${val}_pid\">$pid</p>";
+					echo "<p id=\"${val}_mem\">".getMemory($pid)."</p>";
+					echo "<p id=\"${val}_cpu\">".getCPUTime($pid)."</p>";
+					echo "<p id=\"${val}_status\">".getStatus($val)."</p>";
+					echo "</div>";
+				}
+				echo "<p id=\"cpu_elapsed\">".getCPUElapsed()."</p>";
+			?>
+			
+		</div>
 
 
-</body>
+	</body>
 </html>
 
 

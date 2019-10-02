@@ -1,3 +1,7 @@
+Version 1.1.2
+	- Added bandwidth calculation in web interface
+	- Improved charting visuals in web interface
+
 Version 1.1.1
 	- Add support for No-IP Dynamic DNS
 	- Root directory of repo reorganised
