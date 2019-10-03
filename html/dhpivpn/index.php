@@ -29,15 +29,6 @@
 		return shell_exec("vnstat -i eth0 --xml | awk '/<total>/ { print $1 }'");
 	}
 
-	function whatsInstalled()
-	{
-		$Flags = 0;
-		$Flags |= shell_exec("ls /usr/sbin -l | awk 'BEGIN {flags = 0;} /openvpn/ { flags = or(flags, 1); } /apache2/ { flags = or(flags, 8); } /smbd/ { flags = or(flags, 16); }  END {print flags}'");
-		$Flags |= shell_exec("ls /usr/bin -l | awk 'BEGIN {flags = 0;} /transmission-daemon/ { flags = or(flags, 4); } /pihole-FTL/ { flags = or(flags, 2); }  END {print flags}'");
-		$Flags |= shell_exec("ls /usr/local/bin -l | awk 'BEGIN {flags = 0;} /noip2/ { flags = or(flags, 32); } END {print flags}'");
-		return $Flags;
-	}
-
 	function getStatus($daemon)
 	{
 		return shell_exec("service ".$daemon." status | awk '/Active:/ { if (!match($0, \"awk\")) {printf(\"%s\", $2); } }'");
@@ -56,8 +47,22 @@
 		}
 		else //For the other daemons, use service
 		{
-			return shell_exec("service ".$name." status | awk '/Main PID:/ { if (!match($0, \"awk\")) {printf(\"%s\", $3); }}'");
+			return shell_exec("service ".$name." status | awk '/Main PID:/ { if (!match($0, \"awk\")) {printf(\"%s\", $2); }}'");
 		}
+	}
+
+	function getMemValue($name)
+	{
+		$str = "-";
+		if ($name == "pihole-FTL")
+		{
+			
+		}
+		else
+		{
+			return shell_exec("service ".$name." status | awk '/Memory:/ { if (!match($0, \"awk\")) {printf(\"%s\", $3); }}'");
+		}
+		return $str == "" ? "-" : $str;
 	}
 
 	function getCPUTime($p_id)
@@ -89,11 +94,9 @@
 		Outbound VPN:
 		<p id="vpn"><?php $VPN = getVPNName(); echo $VPN; ?></p>
 		<p id="eip"><?php $ExternalIP = externalIP(); echo $ExternalIP; ?></p>
-		Daemons:
-		<p id="bin"><?php $Installed = whatsInstalled(); echo $Installed; ?></p>
 		Bandwidth:
 		<?php 
-			shell_exec("sudo vnstat -u"); //Update
+			shell_exec("sudo vnstat -u -i eth0"); //Update
 			echo Bandwidth(); 
 		?>
 
@@ -107,6 +110,7 @@
 					$pid = getPID($val);
 					echo "<p id=\"${val}_pid\">$pid</p>";
 					echo "<p id=\"${val}_mem\">".getMemory($pid)."</p>";
+					echo "<p id=\"${val}_memv\">".getMemValue($pid)."</p>";
 					echo "<p id=\"${val}_cpu\">".getCPUTime($pid)."</p>";
 					echo "<p id=\"${val}_status\">".getStatus($val)."</p>";
 					echo "</div>";

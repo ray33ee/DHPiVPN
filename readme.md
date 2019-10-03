@@ -99,6 +99,7 @@ The first command will give the totla uptime of the CPU, and the second will giv
   * Change the outgoing VPN server, stop the outgoing server altogether
   * Links to pihole and transmission web interfaces
   * Show all config files (Samba, outgoing.conf, server.conf, etc.) But NOT pihole as it's done through the web interface
+  * Create icon for web server
 * Add script to reboot pi occasionally and update as well
 * Clean up script Todos
 * Add option to make device invisible over LAN? Maybe block all traffic from 192.168.0.0/16,  except router (192.168.0.1) using firewall (So the only way to connect will be via seure VPN)

@@ -52,7 +52,7 @@
 
 			.bg-green
 			{
-				background-image: linear-gradient(to bottom, #00B446, #00B51E);
+				background-image: linear-gradient(to bottom, #00B446, #45C600);
 			}
 
 			.bg-red
@@ -62,7 +62,7 @@
 
 			.bg-orange
 			{
-				background-image: linear-gradient(to bottom, #DB9F00, #DBB300);
+				background-image: linear-gradient(to bottom, #DB9F00, #FFD30F);
 			}
 
 			.bg-purple

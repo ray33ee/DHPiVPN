@@ -1,3 +1,7 @@
+Version 1.1.3
+	- Improved colours 
+	- Added GET commands to html
+
 Version 1.1.2
 	- Added bandwidth calculation in web interface
 	- Improved charting visuals in web interface

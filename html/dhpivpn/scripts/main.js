@@ -1,13 +1,13 @@
 var chart_colours = [
-					'rgba(255, 99, 132, 1)',
-					'rgba(54, 162, 235, 1)',
-					'rgba(255, 206, 86, 1)',
-					'rgba(75, 192, 192, 1)',
-					'rgba(124, 204, 0, 1)',
-					'rgba(153, 102, 255, 1)',
-					'rgba(255, 159, 64, 1)',
-					'rgba(200, 200, 200, 1)'
-				];
+	'rgba(255, 99, 132, 1)',
+	'rgba(54, 162, 235, 1)',
+	'rgba(255, 206, 86, 1)',
+	'rgba(75, 192, 192, 1)',
+	'rgba(114, 190, 63, 1)',
+	'rgba(153, 102, 255, 1)',
+	'rgba(255, 159, 64, 1)',
+	'rgba(200, 200, 200, 1)'
+];
 
 var daemonList = ['openvpn@server', 'openvpn@outgoing', 'pihole-FTL', 'transmission-daemon', 'apache2', 'smbd', 'noip2'];
 
@@ -55,9 +55,6 @@ function start()
 		}
 	});
 
-	// Call startup script
-	startupCall();
-
 	// Get initial snapshot
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function()
@@ -65,7 +62,7 @@ function start()
 		var domparser = new DOMParser();
 		prevDoc = domparser.parseFromString(this.responseText, "text/html");
 	};
-	xhttp.open("GET", "dhpivpn/data.php", true);
+	xhttp.open("GET", "dhpivpn", true);
 	xhttp.send();
 
 	//
@@ -93,11 +90,9 @@ function getFormattedStatus($Status)
 	return $Status == "" ? "-" : $Status
 }
 
-function startupCall()
+function getFormattedActivity($Status)
 {
-	var xhttp = new XMLHttpRequest();
-	xhttp.open("GET", "dhpivpn/startup.php", true);
-	xhttp.send();
+	return $Status == "" ? "missing" : $Status
 }
 
 function getCPUElapsed()
@@ -154,26 +149,20 @@ function getData()
 			var memLegend = ['', '', '', '', '', '', ''];	
 
 			doc = domparser.parseFromString(this.responseText, "text/html");
+			
+			document.getElementById("inbound_status").innerHTML = getFormattedActivity(doc.getElementById("openvpn@server_status").innerHTML);
+			document.getElementById("outbound_status").innerHTML = getFormattedActivity(doc.getElementById("openvpn@outgoing_status").innerHTML);
+
 			document.getElementById("vpn_server").innerHTML =  getFormattedStatus(doc.getElementById("vpn").innerHTML);
+			if (document.getElementById("outbound_status").innerHTML != "active")
+				document.getElementById("vpn_server").innerHTML = "-";
 			document.getElementById("ip_address").innerHTML = doc.getElementById("eip").innerHTML;
-			document.getElementById("cpu_load").innerHTML = doc.getElementById("cpul").innerHTML;
+
 			document.getElementById("tx_speed").innerHTML = "TX: " + getBandwidth("tx");
 			document.getElementById("rx_speed").innerHTML = "RX: " + getBandwidth("rx");
+
+			document.getElementById("cpu_load").innerHTML = doc.getElementById("cpul").innerHTML;
 			document.getElementById("memory_usage").innerHTML = doc.getElementById("mp").innerHTML + "%";
-			
-			// Get a set of flags, indicating which software is installed
-			var installed = doc.getElementById("bin").innerHTML;
-			
-			if (installed & 1 == 1)
-			{
-				document.getElementById("inbound_status").innerHTML = doc.getElementById("openvpn@server_status").innerHTML
-				document.getElementById("outbound_status").innerHTML = doc.getElementById("openvpn@outgoing_status").innerHTML;
-			}
-			else				
-			{
-				document.getElementById("inbound_status").innerHTML = "missing";
-				document.getElementById("outbound_status").innerHTML = "missing";
-			}
 	
 			daemonList.forEach(function (item, index)
 			{
@@ -216,6 +205,6 @@ function getData()
 			
 		}			
 	}
-	xhttp.open("GET", "dhpivpn/data.php", true);
+	xhttp.open("GET", "dhpivpn", true);
 	xhttp.send();
 }
