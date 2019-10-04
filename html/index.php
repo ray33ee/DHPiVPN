@@ -91,18 +91,18 @@
 	</head>
 
 
-	<body onload="start()">
+	<body onload="start_home()">
 
 		<div id="title">Title</div>
 
 		<div class="" style="display: flex">
 			<div class="" style="width: 10%">
 				<ul>
-					<li><a href="index.php">Home</a></li>
-					<li>Status</li>
-					<li>Speed</li>
-					<li><a href="dhpivpn/admin/">Admin</a></li>
-					<li><a href="admin">PiHole</a></li>
+					<li><a href="/">Home</a></li>
+					<li><a href="/dhpivpn/status/">Status</a></li>
+					<li><a href="/dhpivpn/speed/">Speed</a></li>
+					<li><a href="/dhpivpn/admin/">Admin</a></li>
+					<li><a href="/admin">PiHole</a></li>
 					<li><a href="http://dhpivpn.io:9091/transmission">Transmission</a></li>
 				</ul>
 			</div>

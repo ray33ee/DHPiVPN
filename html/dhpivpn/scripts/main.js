@@ -27,7 +27,7 @@ function round(value, precision)
 	return Number(Math.round(value+'e'+precision)+'e-'+precision);
 }
 
-function start()
+function start_home()
 {
 	//Setup charts
 	cpuChart = new Chart(document.getElementById('cpu_chart').getContext('2d'), {
@@ -62,7 +62,7 @@ function start()
 		var domparser = new DOMParser();
 		prevDoc = domparser.parseFromString(this.responseText, "text/html");
 	};
-	xhttp.open("GET", "dhpivpn", true);
+	xhttp.open("GET", "/dhpivpn", true);
 	xhttp.send();
 
 	//
@@ -70,14 +70,14 @@ function start()
 
 	// Start main loop
 	var delayInMilliseconds = 2000; //2 seconds
-	setInterval(function() { getData(); }, delayInMilliseconds);
+	setInterval(function() { getData_home(); }, delayInMilliseconds);
 }
 
 function getColor($status)
 {
 	if ($status == "")
 		return "grey";
-	if ($status == "active")
+	if ($status == "active" || $status == "deactivating" || $status == "activating")
 		return "green";
 	if ($status == "inactive")
 		return "orange";
@@ -135,7 +135,7 @@ function getBandwidth(direction)
 	return round(rate, 2) + " " + units;
 }
 
-function getData()
+function getData_home()
 {
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function()
@@ -205,6 +205,6 @@ function getData()
 			
 		}			
 	}
-	xhttp.open("GET", "dhpivpn", true);
+	xhttp.open("GET", "/dhpivpn", true);
 	xhttp.send();
 }

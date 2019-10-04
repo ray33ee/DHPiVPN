@@ -58,37 +58,19 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 [Descripion of web interface]
 
 * *Performance* - 
-  * Include cpu load, overall memory usage, total uptime, 
-```sh
-top | head -n 5
-```
-  * cpu & memory usage of openvpn server, openvpn outgoing, transmission, samba, apache, pihole (take into account certain processes may be stopped)  
-```sh
-ps h -eo pid,%cpu,%mem,ppid,args --sort=-pcpu
-```
-  * tx and rx bandwidth
-```sh
-vnstat -i eth0 -tr 2
-```
-
   * display percentage info as nice pie charts with actual values too. Grey out processed that are not running
 * *Pi Hole* - A link to the Pi hole web interface, http://dhpivpn.io/admin
 * *Admin* - Allow *dangerous* functions like
   * Stop/start/restart processes. Detect if a process is running via top/ps 
-```sh
-sudo service transmission-daemon status | awk '/Active/ {print $2}'
-```
+
   * TO find the process ID of pihole, use something like LOOK INTO pidof COMMAND
-```sh
-ps h -eo pid,%mem,args,ppid --sort=+pid | awk '/pihole-FTL/ { if(!match($0, "awk")) {print}}'
-```
+
 
 * Calculate process CPU usage with process uptime from utime and stime via /proc/[pid]/stat, and /proc/stat total CPU times to determine the overall elapsed time in ticks.
-```sh
-cat /proc/stat | head -1 | awk '{printf("Total Uptime: %i\n", $1+$2+$3+$4+$5+$6+$7+$8+$9+$10)}'
-cat /proc/605/stat | awk '{printf("%i\n", $14 + $15);}'
-```
+
 The first command will give the totla uptime of the CPU, and the second will give the total CPU time of the process with PID 605.
+
+
 
 # To do
 
@@ -104,4 +86,5 @@ The first command will give the totla uptime of the CPU, and the second will giv
 * Clean up script Todos
 * Add option to make device invisible over LAN? Maybe block all traffic from 192.168.0.0/16,  except router (192.168.0.1) using firewall (So the only way to connect will be via seure VPN)
 * Fix external IP DDNS issue, then add noip2 to startup script 
+* Add entries to the transmission and pihole web servers to link back to main web page
 

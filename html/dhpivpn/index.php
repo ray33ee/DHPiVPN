@@ -47,7 +47,7 @@
 		}
 		else //For the other daemons, use service
 		{
-			return shell_exec("service ".$name." status | awk '/Main PID:/ { if (!match($0, \"awk\")) {printf(\"%s\", $2); }}'");
+			return shell_exec("service ".$name." status | awk '/Main PID:/ { if (!match($0, \"awk\")) {printf(\"%s\", $3); }}'");
 		}
 	}
 
@@ -60,7 +60,7 @@
 		}
 		else
 		{
-			return shell_exec("service ".$name." status | awk '/Memory:/ { if (!match($0, \"awk\")) {printf(\"%s\", $3); }}'");
+			return shell_exec("service ".$name." status | awk '/Memory:/ { if (!match($0, \"awk\")) {printf(\"%s\", $2); }}'");
 		}
 		return $str == "" ? "-" : $str;
 	}
@@ -108,11 +108,11 @@
 				{
 					echo "<div id=\"".$val."\">";
 					$pid = getPID($val);
-					echo "<p id=\"${val}_pid\">$pid</p>";
-					echo "<p id=\"${val}_mem\">".getMemory($pid)."</p>";
-					echo "<p id=\"${val}_memv\">".getMemValue($pid)."</p>";
-					echo "<p id=\"${val}_cpu\">".getCPUTime($pid)."</p>";
-					echo "<p id=\"${val}_status\">".getStatus($val)."</p>";
+					echo "	<p id=\"${val}_pid\">$pid</p>";
+					echo "	<p id=\"${val}_mem\">".getMemory($pid)."</p>";
+					echo "	<p id=\"${val}_memv\">".getMemValue($val)."</p>";
+					echo "	<p id=\"${val}_cpu\">".getCPUTime($pid)."</p>";
+					echo "	<p id=\"${val}_status\">".getStatus($val)."</p>";
 					echo "</div>";
 				}
 				echo "<p id=\"cpu_elapsed\">".getCPUElapsed()."</p>";

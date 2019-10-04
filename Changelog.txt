@@ -1,3 +1,8 @@
+Version 1.1.4
+	- Absolute URLs changed to relative
+	- Added status page with buttons and indicators
+	- Added resource lock for commands in status page
+
 Version 1.1.3
 	- Improved colours 
 	- Added GET commands to html
