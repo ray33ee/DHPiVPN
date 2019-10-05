@@ -1,2 +1,5 @@
 b-api.facebook.com
+b-graph.facebook.com
+edge-mqtt.facebook.com
 graph.facebook.com
+pornhub.com

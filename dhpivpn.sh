@@ -63,6 +63,10 @@ if (whiptail --title "Pi-Hole" --yesno "Would you like to install Pi-Hole?" 8  7
 
     # Restart DNS server
     pihole restartdns
+
+    # Restart gravity - responsible for resolving the whitelist entries
+    pihole -g
+
     
     PI_HOLE="on"
 fi
@@ -344,7 +348,10 @@ fi
 if (whiptail --title "Apache web server" --yesno "Would you like to install Apache (apache2)?" 8  78); then
     echo "::::: Installing Apache..."
     sudo apt-get install apache2 -y
+    echo "::::: Installing PHP..."
     sudo apt-get install php libapache2-mod-php -y
+    echo "::::: Installing vnStat..."
+    sudo apt-get install vnstat
     #* Download web pages from github
 fi
 

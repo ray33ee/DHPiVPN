@@ -57,34 +57,38 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 
 [Descripion of web interface]
 
-* *Performance* - 
-  * display percentage info as nice pie charts with actual values too. Grey out processed that are not running
-* *Pi Hole* - A link to the Pi hole web interface, http://dhpivpn.io/admin
-* *Admin* - Allow *dangerous* functions like
-  * Stop/start/restart processes. Detect if a process is running via top/ps 
-
-  * TO find the process ID of pihole, use something like LOOK INTO pidof COMMAND
-
-
-* Calculate process CPU usage with process uptime from utime and stime via /proc/[pid]/stat, and /proc/stat total CPU times to determine the overall elapsed time in ticks.
-
-The first command will give the totla uptime of the CPU, and the second will give the total CPU time of the process with PID 605.
-
-
+[List of web interface features] 
 
 # To do
 
-* Find out if we can store IPVanish password as hash (possibly with a script from [here](https://openvpn.net/community-resources/using-alternative-authentication-methods/) or using [this](https://github.com/fionn/vpn_auth)?)
-* Create program/script with basic tools like (use hyperlinks via dhpivpn.io)
-  * Starting/stopping/restarting the openvpn server, openvpn outgoing, transmission daemons, noip, pihole and apache
-  * Get the temperature of the system, network throughput (rx and tx, via ifstat -n -i eth0), cpu usage & pid of processes using  ps -A -f (openvpn out, openvpn in, transmission, noip, pihole and apache), memory usage
-  * Change the outgoing VPN server, stop the outgoing server altogether
-  * Links to pihole and transmission web interfaces
-  * Show all config files (Samba, outgoing.conf, server.conf, etc.) But NOT pihole as it's done through the web interface
-  * Create icon for web server
-* Add script to reboot pi occasionally and update as well
-* Clean up script Todos
-* Add option to make device invisible over LAN? Maybe block all traffic from 192.168.0.0/16,  except router (192.168.0.1) using firewall (So the only way to connect will be via seure VPN)
-* Fix external IP DDNS issue, then add noip2 to startup script 
-* Add entries to the transmission and pihole web servers to link back to main web page
+## Web server
 
+* Improve/create menu, title, logo and icon. 
+* Improve look of web pages, with grey background and white boxes around each widget
+* Password protect web server
+* Create admin page that can change dhpivpn, transmission and pihole passwords
+* Create speed page that shows bandwidth details and
+* Create VPN page used so change outgoing vpn server and stop server altogether 
+* Centralise JS, CSS and PHP code used accross multiple files
+* Add temperature reading to main page
+* Allow user to change outgoing vpn server (based on a preconfigured list. more can be added to the list via cvpns.sh)
+* Modify the transmission and pihole web interfaces to add links to dhpivpn web interface
+* Stop charts resizing (this happens when the percentages in the legend come and go, and change the available size for the graph)
+* OPTIONAL: Add setup page that modifies key fields in daemon config files (download limits in transmission, turtle download speed in transmission, etc.)
+* OPTIONAL: Add public/private key authentication to SSH
+
+## Scripts
+
+* Add installation of web server tools to script (installing vnstat, adding www-data to visudo, installing speedtest-cli)
+* Add script to periodically update, upgrade and reboot Pi. Update pihole, transmission, and anything else that can be manually updated
+* Add script to update noip2 by shutting down outgoing server. TO do this, the outbound server must be disabled to expose the modems IP. TO ensure security, the inbound server and transmission must be stopped to prevent users connecting while the VPN server is down. (First stop the incoming server and transmission, then stop outbound server. This will expose your Pi to the internet directly, and expose its external address. Verify IP has changed, and turn on noip for long enough to update IP. then turn noip off, the outbound server on, followed by the incoming server and transmission. Check IP is the IP of the chosen vpn server.)
+* Complete all todos in dhpivpn (marked with an '\*')
+* Download web server from github during installation
+
+## Samba
+
+* Add passwords to \\\\pivpn 
+
+## PiVPN
+
+* Store IPVanish password as hash/ use public-private key

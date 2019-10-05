@@ -1,3 +1,8 @@
+Version 1.1.5
+	- Updated script
+	- Updated whitelist
+	- Updated readme
+
 Version 1.1.4
 	- Absolute URLs changed to relative
 	- Added status page with buttons and indicators
