@@ -77,9 +77,9 @@ function getColor($status)
 {
 	if ($status == "")
 		return "grey";
-	if ($status == "active" || $status == "deactivating" || $status == "activating")
+	if ($status == "active")
 		return "green";
-	if ($status == "inactive")
+	if ($status == "inactive" || $status == "deactivating" || $status == "activating")
 		return "orange";
 	if ($status == "failed")
 		return "red";

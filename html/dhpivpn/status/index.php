@@ -40,8 +40,16 @@
 			{
 			  	margin: 5px;
 				color: black;
-				width: 15%;
 				height: 20%;
+				width: 20%;
+			}
+
+			.other
+			{
+			  	margin: 5px;
+				color: black;
+				height: 20%;
+				width: 15%;
 			}
 
 			.indicator
@@ -174,18 +182,18 @@
 						echo "		<div class=\"col\"><h3>".$labels[$count].": </h3></div>";
 						echo "		<div class=\"col indicator\"><h3 id=\"".$val."_status\">-</h3></div>";
 						echo "	</div>";
-						echo "	<div class=\"col status\">";
+						echo "	<div class=\"col other\">";
 						echo "		<div class=\"col\"><h5>PID: </h5></div>";
 						echo "		<div class=\"col indicator\"><h5 id=\"".$val."_pid\">-</h5></div>";
 						echo "	</div>";
-						echo "	<div class=\"col status\">";
+						echo "	<div class=\"col other\">";
 						echo "		<div class=\"col\"><h5>Memory: </h5></div>";
 						echo "		<div class=\"col indicator\"><h5 id=\"".$val."_memory\">-</h5></div>";
 						echo "	</div>";
-						echo "	<div class=\"col status\">";
-						echo "		<div class=\"col\" style=\"padding-right: 5px\"><h5 onclick=\"command('".$val."', 'start')\">start</h5></div>";
-						echo "		<div class=\"col\" style=\"padding-right: 5px\"><h5 onclick=\"command('".$val."', 'stop')\">stop</h5></div>";
-						echo "		<div class=\"col\" style=\"padding-right: 5px\"><h5 onclick=\"command('".$val."', 'restart')\">restart</h5></div>";
+						echo "	<div class=\"col other\">";
+						echo "		<div class=\"col\" style=\"padding-right: 5px; margin-right: 5px;\"><h5 onclick=\"command('".$val."', 'start')\">start</h5></div>";
+						echo "		<div class=\"col\" style=\"padding-right: 5px; margin-right: 5px;\"><h5 onclick=\"command('".$val."', 'stop')\">stop</h5></div>";
+						echo "		<div class=\"col\" style=\"padding-right: 5px; margin-right: 5px;\"><h5 onclick=\"command('".$val."', 'restart')\">restart</h5></div>";
 						echo "	</div>";
 						echo "</div>";
 						

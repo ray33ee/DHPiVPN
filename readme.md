@@ -16,7 +16,7 @@ DHPiVPN installs the software needed for a double hop VPN connection, but also i
 * *Pi-hole* - Pi-hole allows connecting clients (and local clients) to take advantage of the features of Pi hole as a DNS server
 * *Samba* - Folders can be configured as Samba folders, and accessable over VPN for convenient file access
 * *Transmission* - The Transmission daemon allows the Pi to run as a seedbox, with access over VPN
-* *No-IP Client* - No-IP can be configured to allow Dynamic DNS for the VPN domain, and any other domains aat your home IP
+* *No-IP Client* - No-IP can be configured to allow Dynamic DNS for the VPN domain, and any other domains at your home IP
 * *Web Interface* - All features are controlled and monitored from a single unifying web interface 
 
 # Installation
@@ -32,6 +32,12 @@ Installing DHPiVPN is quite simple. The only prerequisite is a static IP, as the
 sudo apt-get update
 sudo apt-get upgrade
 ```
+
+NOTE: By the current installation, the user still needs to 
+
+* Add 'www-data ALL=NOPASSWD: ALL' to sudo visudo
+* Copy over the web interface
+* Remove the old index.html from /var/www/html
 
 4. Finally install DHPiVPN using the command
 
@@ -83,7 +89,7 @@ is meant for mounting an external volume (such as HDD or SSD) for large storage.
 * Add script to periodically update, upgrade and reboot Pi. Update pihole, transmission, and anything else that can be manually updated
 * Add script to update noip2 by shutting down outgoing server. TO do this, the outbound server must be disabled to expose the modems IP. TO ensure security, the inbound server and transmission must be stopped to prevent users connecting while the VPN server is down. (First stop the incoming server and transmission, then stop outbound server. This will expose your Pi to the internet directly, and expose its external address. Verify IP has changed, and turn on noip for long enough to update IP. then turn noip off, the outbound server on, followed by the incoming server and transmission. Check IP is the IP of the chosen vpn server.)
 * Complete all todos in dhpivpn (marked with an '\*')
-* Download web server from github during installation
+* Download web server from github during installation (making sure to remove index.html)
 
 ## Samba
 

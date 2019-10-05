@@ -109,7 +109,7 @@
 
 			<div class="" style="width: 90%">
 				<div class="row clearfix">
-					
+					change dhpivpn, transmisison and pihole passwords
 				</div>
 
 			</div>
